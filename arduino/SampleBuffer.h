@@ -3,9 +3,9 @@
 #include <inttypes.h>
 #include "BMA250.h"
 
-#define MAX_SAMPLES 256  // Use a power of 2 for faster modulo
-#define SAMPLE_MICROS 8333
-#define CUTOFF_FREQ 50
+#define MAX_SAMPLES 16      // Use a power of 2 for faster modulo
+#define SAMPLE_MICROS 4166  // 240Hz
+#define CUTOFF_FREQ 71      // Hz
 
 #define TWOPI 6.28318530717958647693
 #define SAMPLE_INTERVAL (SAMPLE_MICROS / 1000000.0)
@@ -44,6 +44,10 @@ public:
     return adjusted_end - start;
   }
 
+  float get(size_t index) {
+    return buffer[mask(start + index)];
+  }
+
   // Appends a new sample, discarding the oldest sample if there is no space.
   void append(Sample sample) {
     float mag = 0;
@@ -74,10 +78,6 @@ public:
     squares_total += val * val;
     last_mag = mag;
     end = mask2(end + 1);
-
-    if (end % 8 == 0) {
-      SerialUSB.println((val - mean()) / std_dev());
-    }
   }
 
   SampleBufferView view() {
