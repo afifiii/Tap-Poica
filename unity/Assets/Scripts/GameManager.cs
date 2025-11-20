@@ -2,33 +2,28 @@
 using UnityEngine.UI;
 using System.Collections;
 
-public class GameManager : MonoBehaviour
+public class GameManager :MonoBehaviour
 {
-    public static GameManager instance;
+    public static GameManager Instance;
 
-    [Header("Audio & Gameplay")]
-    public AudioSource theMusic;
-    public BeatScroller theBS;
-    private bool startingPoint;
-    private bool resultsShown = false;
+    [Header("Audio & Gameplay")] public AudioSource audioSource;
+    public BeatScroller theBs;
+    private bool _startingPoint;
+    private bool _resultsShown = false;
 
-    [Header("Score Settings")]
-    public int currentScore;
+    [Header("Score Settings")] public int currentScore;
     public int scorePerNote = 100;
     public int scorePerGoodNote = 125;
     public int scorePerPerfectNote = 150;
 
-    [Header("Multiplier Settings")]
-    public int currentMultiplier;
+    [Header("Multiplier Settings")] public int currentMultiplier;
     public int multiplierTracker;
     public int[] multiplierThresholds;
 
-    [Header("UI Elements")]
-    public Text scoreTxt;
+    [Header("UI Elements")] public Text scoreTxt;
     public Text multiTxt;
 
-    [Header("Results UI")]
-    public GameObject resultsScreen;
+    [Header("Results UI")] public GameObject resultsScreen;
     public Text percentHitTxt;
     public Text normalHitTxt;
     public Text goodHitTxt;
@@ -37,8 +32,7 @@ public class GameManager : MonoBehaviour
     public Text rankTxt;
     public Text finalScoreText;
 
-    [Header("Stats Tracking")]
-    public float totalNotes;
+    [Header("Stats Tracking")] public float totalNotes;
     public float normalHits;
     public float goodHits;
     public float perfectHits;
@@ -46,38 +40,38 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        instance = this;
+        Instance = this;
 
         scoreTxt.text = "Score: 0";
         currentMultiplier = 1;
 
-        totalNotes = FindObjectsOfType<NoteObject>().Length;
+        totalNotes = FindObjectsByType<NoteObject>(FindObjectsSortMode.None).Length;
 
         // ✅ Hide results at start
         resultsScreen.SetActive(false);
 
         // Ensure the music won't loop forever
-        theMusic.loop = false;
+        audioSource.loop = false;
     }
 
     void Update()
     {
-        if (!startingPoint)
+        if(!_startingPoint)
         {
-            if (Input.anyKeyDown)
+            if(Input.anyKeyDown)
             {
-                startingPoint = true;
-                theBS.hasStarted = true;
-                theMusic.Play();
+                _startingPoint = true;
+                theBs.hasStarted = true;
+                audioSource.Play();
             }
         }
         else
         {
             // ✅ Only show results when song ends, and only once
-            if (!resultsShown && !theMusic.isPlaying)
+            if(!_resultsShown && !audioSource.isPlaying)
             {
                 ShowResults();
-                resultsShown = true;
+                _resultsShown = true;
             }
         }
     }
@@ -91,32 +85,37 @@ public class GameManager : MonoBehaviour
         perfectHitTxt.text = perfectHits.ToString();
         missedHitTxt.text = missedHits.ToString();
 
-        float totalHit = normalHits + goodHits + perfectHits;
-        float percentHit = (totalNotes > 0) ? (totalHit / totalNotes) * 100f : 0f;
+        var totalHit = normalHits + goodHits + perfectHits;
+        var percentHit = (totalNotes > 0) ? (totalHit / totalNotes) * 100f : 0f;
         percentHitTxt.text = percentHit.ToString("F1") + "%";
 
         // ✅ Rank calculation
-        string rankVal = "F";
-        if (percentHit > 95) rankVal = "S";
-        else if (percentHit > 85) rankVal = "A";
-        else if (percentHit > 70) rankVal = "B";
-        else if (percentHit > 55) rankVal = "C";
-        else if (percentHit > 40) rankVal = "D";
+
+        var rankVal = percentHit switch
+        {
+            > 95 => "S",
+            > 85 => "A",
+            > 70 => "B",
+            > 55 => "C",
+            > 40 => "D",
+            _ => "F"
+        };
+
         rankTxt.text = rankVal;
 
         finalScoreText.text = currentScore.ToString();
     }
 
     // --- Scoring System ---
-    public void NoteHit()
+    void NoteHit()
     {
         Debug.Log("Hit on time.");
 
-        if (currentMultiplier - 1 < multiplierThresholds.Length)
+        if(currentMultiplier - 1 < multiplierThresholds.Length)
         {
             multiplierTracker++;
 
-            if (multiplierThresholds[currentMultiplier - 1] <= multiplierTracker)
+            if(multiplierThresholds[currentMultiplier - 1] <= multiplierTracker)
             {
                 multiplierTracker = 0;
                 currentMultiplier++;

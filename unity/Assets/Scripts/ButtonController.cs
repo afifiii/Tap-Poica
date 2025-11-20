@@ -3,14 +3,14 @@ using UnityEngine;
 public class ButtonController :MonoBehaviour
 
 {
-    private SpriteRenderer theSR;
+    private SpriteRenderer _spriteRenderer;
     public Sprite defaultImage;
     public Sprite pressedImage;
     public KeyCode keyToPress;
 
     void Start()
     {
-        theSR = GetComponent<SpriteRenderer>();
+        _spriteRenderer = GetComponent<SpriteRenderer>();
 
     }
 
@@ -18,12 +18,12 @@ public class ButtonController :MonoBehaviour
     {
         if(Input.GetKeyDown(keyToPress))
         {
-            theSR.sprite = pressedImage;
+            _spriteRenderer.sprite = pressedImage;
         }
 
         if(Input.GetKeyUp(keyToPress))
         {
-            theSR.sprite = defaultImage;
+            _spriteRenderer.sprite = defaultImage;
         }   
 
     }
