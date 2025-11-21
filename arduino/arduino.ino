@@ -1,29 +1,53 @@
 #include "BMA250.h"
 #include <Wire.h>
 
+#include "DisplayManager.h"
 #include "SampleBuffer.h"
 
 #define TAP_THRESH 5600.0
-#define TAP_DEBOUNCE 60000  // microseconds
+#define TAP_DEBOUNCE 60000 // microseconds
 #define SHAKE_THRESH 510.0
-#define SHAKE_DEBOUNCE 130000  // microseconds
+#define SHAKE_DEBOUNCE 130000 // microseconds
 
+#define VIBRATE_PIN 6
+#define VIBRATE_PIN_ACTIVE HIGH
+#define VIBRATE_PIN_INACTIVE LOW
+
+char sprintbuff[100];
+
+//
+// Global Objects
+//
+TinyScreen display = TinyScreen(TinyScreenDefault);
+Timer _timer(display);
+MenuManager menuManager(_timer, display);
+BLEManager bleManager;
+DisplayManager displayManager(display, _timer, menuManager, bleManager);
 SampleBuffer samples;
 BMA250 accel_sensor;
 uint32_t clock_micros;
 uint32_t last_tap = 0, last_shake = 0;
 bool is_shaking = false;
 
-void setup() {
-  SerialUSB.begin(115200);
-  Wire.begin();
+typedef struct __attribute__((packed)) _GamePacket {
+  uint8_t tapCounter : 4;
+  uint8_t shakeCounter : 4;
+} GamePacket_t;
 
-  SerialUSB.println("Initializing BMA...");
+void setup() {
+  SerialMonitorInterface.begin(115200);
+  Wire.begin();
+  pinMode(VIBRATE_PIN, OUTPUT);
+  digitalWrite(VIBRATE_PIN, VIBRATE_PIN_INACTIVE);
+
+  PRINTF("Initializing BMA...");
   if (accel_sensor.begin(BMA250_range_2g, BMA250_update_time_4ms)) {
-    SerialUSB.println("ERROR! NO BMA250 DETECTED!");
+    PRINTF("ERROR! NO BMA250 DETECTED!");
   }
 
   clock_micros = micros();
+  displayManager.begin();
+  bleManager.begin();
 }
 
 void loop() {
@@ -35,12 +59,15 @@ void loop() {
   detectShake();
 
   waitForNextSample();
+
+  bleManager.update();
+  displayManager.update();
 }
 
 void detectTap() {
   float val = samples.get(samples.len() - 1) - samples.mean();
   if (val > TAP_THRESH || val < -TAP_THRESH) {
-    SerialUSB.println("Tap");
+    PRINTF("Tap\n");
     last_tap = clock_micros;
   }
 }
@@ -56,10 +83,10 @@ void detectShake() {
   }
 
   if (is_shaking && clock_micros - last_shake > SHAKE_DEBOUNCE) {
-    SerialUSB.println("Shake end");
+    PRINTF("Shake end\n");
     is_shaking = false;
   } else if (!is_shaking) {
-    SerialUSB.println("Shake start");
+    PRINTF("Shake start\n");
     is_shaking = true;
   }
 }
@@ -74,6 +101,5 @@ void waitForNextSample() {
   }
   clock_micros = micros();
 
-  // SerialUSB.print("micros: ");
-  // SerialUSB.println(elapsed);
+  // PRINTF("micros: %llu\n", elapsed);
 }
