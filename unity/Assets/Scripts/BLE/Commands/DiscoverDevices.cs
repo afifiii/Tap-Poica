@@ -6,7 +6,7 @@ namespace BLE.Commands
     /// <summary>
     /// Command to start discovering BLE devices in the area.
     /// </summary>
-    public class DiscoverDevices : BleCommand
+    public class DiscoverDevices :BleCommand
     {
         /// <summary>
         /// Default time that this command will search BLE devices for (in milliseconds).
@@ -27,7 +27,7 @@ namespace BLE.Commands
         /// Discovers BLE devices using the given time in milliseconds.
         /// </summary>
         /// <param name="discoverTime">The amount of searching time in milliseconds that. Defaults to <see cref="StandardDiscoverTime"/>.</param>
-        public DiscoverDevices(int discoverTime = StandardDiscoverTime) : base(true)
+        public DiscoverDevices(int discoverTime = StandardDiscoverTime) :base(true)
         {
             _discoverTime = discoverTime;
         }
@@ -38,7 +38,8 @@ namespace BLE.Commands
         /// </summary>
         /// <param name="onDeviceDiscovered">The <see cref="DeviceDiscovered"/> that will trigger if a device is discovered.</param>
         /// <param name="discoverTime">The amount of searching time in milliseconds that. Defaults to <see cref="StandardDiscoverTime"/>.</param>
-        public DiscoverDevices(Action<string, string> onDeviceDiscovered, int discoverTime = StandardDiscoverTime) : base(true)
+        public DiscoverDevices(Action<string, string> onDeviceDiscovered, int discoverTime = StandardDiscoverTime) :
+            base(true)
         {
             this.onDeviceDiscovered += new DeviceDiscovered(onDeviceDiscovered);
             _discoverTime = discoverTime;
@@ -50,7 +51,7 @@ namespace BLE.Commands
 
         public override bool CommandReceived(BleObject obj)
         {
-            if (string.Equals(obj.Command, "DiscoveredDevice"))
+            if(string.Equals(obj.Command, "DiscoveredDevice"))
                 onDeviceDiscovered?.Invoke(obj.Device, obj.Name);
 
             return string.Equals(obj.Command, "FinishedDiscovering");

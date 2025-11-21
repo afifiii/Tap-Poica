@@ -1,5 +1,6 @@
-﻿using BLE;
-
+﻿using System.Globalization;
+using BLE;
+using BLE.Commands;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,8 +10,8 @@ public class GameManager :MonoBehaviour
 
     [Header("Audio & Gameplay")] public AudioSource audioSource;
     public BeatScroller theBs;
-    private bool _startingPoint;
-    private bool _resultsShown = false;
+    bool _startingPoint;
+    bool _resultsShown;
 
     [Header("Score Settings")] public int currentScore;
     public int scorePerNote = 100;
@@ -39,6 +40,8 @@ public class GameManager :MonoBehaviour
     public float perfectHits;
     public float missedHits;
 
+    byte _sensorPacket;
+
     void Start()
     {
         Instance = this;
@@ -53,6 +56,22 @@ public class GameManager :MonoBehaviour
 
         // Ensure the music won't loop forever
         audioSource.loop = false;
+
+
+        // Example BLE usage: Initialize BLE manager
+        if(!BleManager.IsInitialized)
+        {
+            BleManager.Instance.Initialize();
+        }
+
+        BleManager.Instance.QueueCommand(new DiscoverDevices(OnDeviceFound));
+        BleManager.Instance.QueueCommand(new ConnectToDevice("idk", _ => { }, _ => { }));
+        BleManager.Instance.QueueCommand(new SubscribeToCharacteristic("67670000-0000-0000-0000-000000000000",
+            "67670001-0000-0000-0000-000000000000", "67670002-0000-0000-0000-000000000000"));
+    }
+    static void OnDeviceFound(string arg1, string arg2)
+    {
+        throw new System.NotImplementedException();
     }
 
     void Update()
@@ -75,10 +94,10 @@ public class GameManager :MonoBehaviour
     {
         resultsScreen.SetActive(true);
 
-        normalHitTxt.text = normalHits.ToString();
-        goodHitTxt.text = goodHits.ToString();
-        perfectHitTxt.text = perfectHits.ToString();
-        missedHitTxt.text = missedHits.ToString();
+        normalHitTxt.text = normalHits.ToString(CultureInfo.CurrentCulture);
+        goodHitTxt.text = goodHits.ToString(CultureInfo.CurrentCulture);
+        perfectHitTxt.text = perfectHits.ToString(CultureInfo.CurrentCulture);
+        missedHitTxt.text = missedHits.ToString(CultureInfo.CurrentCulture);
 
         var totalHit = normalHits + goodHits + perfectHits;
         var percentHit = (totalNotes > 0) ? (totalHit / totalNotes) * 100f : 0f;

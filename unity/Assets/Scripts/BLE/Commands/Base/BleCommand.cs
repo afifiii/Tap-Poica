@@ -16,12 +16,12 @@
         /// If <see langword="true"/>, the <see cref="BleCommand"/> will run parallel with 
         /// other commands. Helpful for commands such as <see cref="SubscribeToCharacteristic"/>.
         /// </summary>
-        public readonly bool runParallel = false;
+        public readonly bool runParallel;
 
         /// <summary>
         /// Will continue running, even if <see cref="CommandReceived(BleObject)"/> returns <see langword="true"/>
         /// </summary>
-        public readonly bool runContinuously = false;
+        public readonly bool runContinuously;
 
         /// <summary>
         /// Base initialization of the <see cref="BleCommand"/>.
@@ -41,7 +41,9 @@
         /// Ends the <see cref="BleCommand"/>, useful for unsubscribing from Characteristics 
         /// for commands such as <see cref="SubscribeToCharacteristic"/>.
         /// </summary>
-        public virtual void End() { }
+        public virtual void End()
+        {
+        }
 
         /// <summary>
         /// Ends the <see cref="BleCommand"/> when time runs out, by default calls <see cref="End"/>.

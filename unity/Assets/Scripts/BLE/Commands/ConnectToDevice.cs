@@ -5,7 +5,7 @@ namespace BLE.Commands
     /// <summary>
     /// Command to connect to a given BLE device.
     /// </summary>
-    public class ConnectToDevice : BleCommand
+    public class ConnectToDevice :BleCommand
     {
         /// <summary>
         /// The UUID of the device to connect to.
@@ -35,11 +35,12 @@ namespace BLE.Commands
         public readonly CharacteristicDiscovered onCharacteristicDiscovered;
 
         #region Constructors
+
         /// <summary>
         /// Connects to a BLE device with the given UUID.
         /// </summary>
         /// <param name="deviceAddress">The UUID that BLE should connect to.</param>
-        public ConnectToDevice(string deviceAddress) : base(true, true)
+        public ConnectToDevice(string deviceAddress) :base(true, true)
         {
             this.deviceAddress = deviceAddress;
         }
@@ -51,7 +52,7 @@ namespace BLE.Commands
         /// <param name="deviceAddress">The UUID that BLE should connect to.</param>
         /// <param name="onConnected">The <see cref="ConnectionChange"/> that will trigger if the device is connected.</param>
         public ConnectToDevice(string deviceAddress,
-            ConnectionChange onConnected) : base(true, true)
+            ConnectionChange onConnected) :base(true, true)
         {
             this.deviceAddress = deviceAddress;
             this.onConnected += onConnected;
@@ -66,7 +67,7 @@ namespace BLE.Commands
         /// <param name="onDisconnected">The <see cref="ConnectionChange"/> that will trigger if the device has disconnected.</param>
         public ConnectToDevice(string deviceAddress,
             ConnectionChange onConnected,
-            ConnectionChange onDisconnected) : base(true, true)
+            ConnectionChange onDisconnected) :base(true, true)
         {
             this.deviceAddress = deviceAddress;
 
@@ -88,7 +89,7 @@ namespace BLE.Commands
             ConnectionChange onConnected,
             ConnectionChange onDisconnected,
             ServiceDiscovered onServiceDiscovered,
-            CharacteristicDiscovered onCharacteristicDiscovered) : base(true, true)
+            CharacteristicDiscovered onCharacteristicDiscovered) :base(true, true)
         {
             this.deviceAddress = deviceAddress;
 
@@ -98,6 +99,7 @@ namespace BLE.Commands
             this.onServiceDiscovered += onServiceDiscovered;
             this.onCharacteristicDiscovered += onCharacteristicDiscovered;
         }
+
         #endregion
 
         public override void Start() => BleManager.SendCommand("connectToDevice", deviceAddress);
@@ -155,6 +157,7 @@ namespace BLE.Commands
         /// <param name="deviceAddress">The UUID of the BLE device.</param>
         /// <param name="serviceAddress">The UUID of the Service.</param>
         /// <param name="characteristicAddress">The UUID of the Characteristic.</param>
-        public delegate void CharacteristicDiscovered(string deviceAddress, string serviceAddress, string characteristicAddress);
+        public delegate void CharacteristicDiscovered(string deviceAddress, string serviceAddress,
+            string characteristicAddress);
     }
 }

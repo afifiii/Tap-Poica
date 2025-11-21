@@ -19,7 +19,7 @@ namespace BLE
         /// <summary>
         /// Sets the name to "BleAdapter" to receive messages from the Java library.
         /// </summary>
-        private void Awake() => gameObject.name = nameof(BleAdapter);
+        void Awake() => gameObject.name = nameof(BleAdapter);
 
         /// <summary>
         /// The method that the Java library will send their JSON messages to.

@@ -3,7 +3,7 @@ using UnityEngine;
 public class ButtonController :MonoBehaviour
 
 {
-    private SpriteRenderer _spriteRenderer;
+    SpriteRenderer _spriteRenderer;
     public Sprite defaultImage;
     public Sprite pressedImage;
     public KeyCode keyToPress;
@@ -24,7 +24,7 @@ public class ButtonController :MonoBehaviour
         if(Input.GetKeyUp(keyToPress))
         {
             _spriteRenderer.sprite = defaultImage;
-        }   
+        }
 
     }
 

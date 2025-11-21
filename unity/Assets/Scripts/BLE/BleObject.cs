@@ -9,7 +9,9 @@ namespace BLE
     [Serializable]
     public class BleObject
     {
+
         #region Device Information
+
         public string Device => device;
         [SerializeField] string device;
 
@@ -21,19 +23,32 @@ namespace BLE
 
         public string Characteristic => characteristic;
         [SerializeField] string characteristic;
+
         #endregion
 
         #region Command Information
+
         public string Command => command;
         [SerializeField] string command;
+
         #endregion
 
         #region Error Information
-        public bool HasError { get => hasError; }
+
+        public bool HasError
+        {
+            get => hasError;
+        }
+
         [SerializeField] bool hasError;
 
-        public string ErrorMessage { get => errorMessage; }
+        public string ErrorMessage
+        {
+            get => errorMessage;
+        }
+
         [SerializeField] string errorMessage = string.Empty;
+
         #endregion
 
         public string Base64Message => base64Message;

@@ -7,7 +7,7 @@ namespace BLE
     /// <summary>
     /// The Singleton manager that handles all BLE interactions for the plugin
     /// </summary>
-    public class BleManager : MonoBehaviour
+    public class BleManager :MonoBehaviour
     {
         /// <summary>
         /// Gets a Singleton instance of the <see cref="BleManager"/>
@@ -46,8 +46,7 @@ namespace BLE
         /// <summary>
         /// <see langword="true"/> if all interactions with the <see cref="BleManager"/> should be logged.
         /// </summary>
-        [Header("Logging")]
-        [Tooltip("Logs all messages coming through the BleManager")]
+        [Header("Logging")] [Tooltip("Logs all messages coming through the BleManager")]
         public bool logAllMessages;
 
         /// <summary>
@@ -70,12 +69,12 @@ namespace BLE
         /// <summary>
         /// Incoming queue of <see cref="BleCommand"/> that have yet to be processed.
         /// </summary>
-        readonly Queue<BleCommand> _commandQueue = new Queue<BleCommand>();
+        readonly Queue<BleCommand> _commandQueue = new();
 
         /// <summary>
         /// The stack of parallel running <see cref="BleCommand"/>.
         /// </summary>
-        readonly List<BleCommand> _parrallelStack = new List<BleCommand>();
+        readonly List<BleCommand> _parrallelStack = new();
 
         /// <summary>
         /// The active non-parallel or continuous <see cref="BleCommand"/>.
@@ -91,7 +90,7 @@ namespace BLE
         {
             _instance = this;
 
-            if (initializeOnAwake)
+            if(initializeOnAwake)
                 Initialize();
 
             adapter.OnMessageReceived += OnBleMessageReceived;
@@ -103,26 +102,24 @@ namespace BLE
             _activeTimer += Time.deltaTime;
 
             // Checks if the _activeCommand has timed out
-            if (_activeCommand != null && _activeTimer > _activeCommand.Timeout)
+            if(_activeCommand == null || !(_activeTimer > _activeCommand.Timeout)) return;
+            CheckForLog("Timed Out: " + _activeCommand + " - " + _activeCommand.Timeout);
+
+            // Resets timers and ends the current _activeCommand
+            _activeTimer = 0f;
+            _activeCommand.EndOnTimeout();
+
+            if(_commandQueue.Count > 0)
             {
-                CheckForLog("Timed Out: " + _activeCommand + " - " + _activeCommand.Timeout);
+                // Sets a new _activeCommand
+                _activeCommand = _commandQueue.Dequeue();
+                _activeCommand?.Start();
 
-                // Resets timers and ends the current _activeCommand
-                _activeTimer = 0f;
-                _activeCommand.EndOnTimeout();
-
-                if (_commandQueue.Count > 0)
-                {
-                    // Sets a new _activeCommand
-                    _activeCommand = _commandQueue.Dequeue();
-                    _activeCommand?.Start();
-
-                    if (_activeCommand != null)
-                        CheckForLog("Executing new Command: " + _activeCommand.GetType().Name);
-                }
-                else
-                    _activeCommand = null;
+                if(_activeCommand != null)
+                    CheckForLog("Executing new Command: " + _activeCommand.GetType().Name);
             }
+            else
+                _activeCommand = null;
         }
 
         /// <summary>
@@ -131,18 +128,21 @@ namespace BLE
         /// </summary>
         public void Initialize()
         {
-            if (!_initialized)
+            if(!_initialized)
             {
                 // Creates a new Singleton instance
-                if (_instance == null)
+                if(_instance == null)
                     CreateBleManagerObject();
 
                 // Prepares a BleAdapter to receive messages
+
                 #region Adapter
-                if (adapter == null)
+
+                if(adapter == null)
                 {
                     adapter = FindFirstObjectByType<BleAdapter>();
-                    if (adapter == null)
+
+                    if(adapter == null)
                     {
                         var bleAdapter = new GameObject(nameof(BleAdapter));
                         bleAdapter.transform.SetParent(Instance.transform);
@@ -150,15 +150,19 @@ namespace BLE
                         adapter = bleAdapter.AddComponent<BleAdapter>();
                     }
                 }
+
                 #endregion
 
                 // Binds to the com.velorexe.unityandroidble.UnityAndroidBLE Singleton
+
                 #region Android Library
 
                 if(BleLibrary != null) return;
                 var librarySingleton = new AndroidJavaClass("com.velorexe.unityandroidble.UnityAndroidBLE");
                 BleLibrary = librarySingleton.CallStatic<AndroidJavaObject>("getInstance");
+
                 #endregion
+
             }
         }
 
@@ -173,7 +177,7 @@ namespace BLE
 
             BleLibrary?.Dispose();
 
-            if (adapter != null)
+            if(adapter != null)
                 Destroy(adapter.gameObject);
         }
 
@@ -186,18 +190,18 @@ namespace BLE
             CheckForLog(JsonUtility.ToJson(obj, true));
 
             // Checks if the _activeCommand consumes the BleObject
-            if (_activeCommand != null && _activeCommand.CommandReceived(obj))
+            if(_activeCommand != null && _activeCommand.CommandReceived(obj))
             {
                 _activeCommand.End();
 
                 // Queues a new _activeCommand if it has consumed the BleObject
                 // Since the command is not continious or parallel, it should be cleared if it's purpose is fulfilled
-                if (_commandQueue.Count > 0)
+                if(_commandQueue.Count > 0)
                 {
                     _activeCommand = _commandQueue.Dequeue();
                     _activeCommand?.Start();
 
-                    if (_activeCommand != null)
+                    if(_activeCommand != null)
                         CheckForLog("Executing new Command: " + _activeCommand.GetType().Name);
                 }
                 else
@@ -207,7 +211,7 @@ namespace BLE
             // Run through the parallel stack, remove the commands that have consumed the BleObject
             for (var i = 0; i < _parrallelStack.Count; i++)
             {
-                if (_parrallelStack[i].CommandReceived(obj))
+                if(_parrallelStack[i].CommandReceived(obj))
                 {
                     _parrallelStack[i].End();
                     _parrallelStack.RemoveAt(i);
@@ -222,14 +226,15 @@ namespace BLE
         public void QueueCommand(BleCommand command)
         {
             CheckForLog("Queueing Command: " + command.GetType().Name);
-            if (command.runParallel || command.runContinuously)
+
+            if(command.runParallel || command.runContinuously)
             {
                 _parrallelStack.Add(command);
                 command.Start();
             }
             else
             {
-                if (_activeCommand == null)
+                if(_activeCommand == null)
                 {
                     _activeTimer = 0f;
 
@@ -248,15 +253,15 @@ namespace BLE
 
         static void CheckForLog(string logMessage)
         {
-            if (Instance.useUnityLog)
+            if(Instance.useUnityLog)
                 Debug.LogWarning(logMessage);
-            if (Instance.useAndroidLog)
+            if(Instance.useAndroidLog)
                 AndroidLog(logMessage);
         }
 
         public static void AndroidLog(string message)
         {
-            if (_initialized)
+            if(_initialized)
                 BleLibrary?.CallStatic("androidLog", message);
         }
 
@@ -267,7 +272,7 @@ namespace BLE
         /// <param name="parameters">Any additional parameters that the Java method defines.</param>
         internal static void SendCommand(string command, params object[] parameters)
         {
-            if (Instance.logAllMessages)
+            if(Instance.logAllMessages)
                 CheckForLog("Calling Command: " + command);
             BleLibrary?.Call(command, parameters);
         }
