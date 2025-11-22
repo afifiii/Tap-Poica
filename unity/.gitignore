@@ -11,3 +11,4 @@ Logs/
 Library/
 UserSettings/
 Temp/
+.utmp/

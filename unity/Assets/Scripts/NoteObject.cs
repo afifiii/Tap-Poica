@@ -42,13 +42,13 @@ public class NoteObject :MonoBehaviour
         }
     }
 
-    private void OnTriggerEnter2D(Collider2D other)
+    void OnTriggerEnter2D(Collider2D other)
     {
         if(!other.CompareTag("Activator")) return;
         canBePressed = true;
     }
 
-    private void OnTriggerExit2D(Collider2D other)
+    void OnTriggerExit2D(Collider2D other)
     {
         if(!other.CompareTag("Activator")) return;
         canBePressed = false;
