@@ -1,4 +1,8 @@
-﻿using UnityEngine;
+﻿using System.Globalization;
+using BLE;
+using BLE.Commands;
+using TMPro;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class GameManager :MonoBehaviour
@@ -6,9 +10,9 @@ public class GameManager :MonoBehaviour
     public static GameManager Instance;
 
     [Header("Audio & Gameplay")] public AudioSource audioSource;
-    public BeatScroller theBs;
-    private bool _startingPoint;
-    private bool _resultsShown = false;
+    public BeatScroller beatScroller;
+    bool _startingPoint;
+    bool _resultsShown;
 
     [Header("Score Settings")] public int currentScore;
     public int scorePerNote = 100;
@@ -19,23 +23,31 @@ public class GameManager :MonoBehaviour
     public int multiplierTracker;
     public int[] multiplierThresholds;
 
-    [Header("UI Elements")] public Text scoreTxt;
-    public Text multiTxt;
+    [Header("UI Elements")] public TextMeshProUGUI scoreTxt;
+    public TextMeshProUGUI multiTxt;
 
     [Header("Results UI")] public GameObject resultsScreen;
-    public Text percentHitTxt;
-    public Text normalHitTxt;
-    public Text goodHitTxt;
-    public Text perfectHitTxt;
-    public Text missedHitTxt;
-    public Text rankTxt;
-    public Text finalScoreText;
+    public TextMeshProUGUI percentHitTxt;
+    public TextMeshProUGUI normalHitTxt;
+    public TextMeshProUGUI goodHitTxt;
+    public TextMeshProUGUI perfectHitTxt;
+    public TextMeshProUGUI missedHitTxt;
+    public TextMeshProUGUI rankTxt;
+    public TextMeshProUGUI finalScoreText;
 
     [Header("Stats Tracking")] public float totalNotes;
     public float normalHits;
     public float goodHits;
     public float perfectHits;
     public float missedHits;
+
+    byte _sensorPacket;
+    string _deviceName;
+    string _deviceAddress;
+
+    const string DeviceName = "TapPiocaController";
+    const string ServiceUuid = "67676701-6767-6767-6767-676767676767";
+    const string CharacteristicUuid = "67676702-6767-6767-6767-676767676767";
 
     void Start()
     {
@@ -51,6 +63,36 @@ public class GameManager :MonoBehaviour
 
         // Ensure the music won't loop forever
         audioSource.loop = false;
+
+
+        // Example BLE usage: Initialize BLE manager
+        if(!BleManager.IsInitialized)
+        {
+            BleManager.Instance.Initialize();
+        }
+
+        BleManager.Instance.QueueCommand(new DiscoverDevices(OnDeviceFound));
+    }
+    static void OnDeviceFound(string deviceAddress, string deviceName)
+    {
+        if(string.Equals(deviceName, DeviceName))
+            BleManager.Instance.QueueCommand(new ConnectToDevice(deviceAddress, OnDeviceConnected));
+    }
+
+    static void OnDeviceConnected(string deviceAddress)
+    {
+        Debug.Log("Connected to device: " + deviceAddress);
+        BleManager.Instance.QueueCommand(new SubscribeToCharacteristic(deviceAddress, ServiceUuid, CharacteristicUuid,
+            OnCharacteristicSubscribed, true));
+    }
+
+    static void OnCharacteristicSubscribed(byte[] data)
+    {
+        if(data.Length is <= 0 or > 1) return;
+
+        Instance._sensorPacket = data[0];
+        Debug.Log(data[0].ToString());
+        // Process sensor data as needed
     }
 
     void Update()
@@ -58,7 +100,7 @@ public class GameManager :MonoBehaviour
         if(!_startingPoint && Input.anyKeyDown)
         {
             _startingPoint = true;
-            theBs.hasStarted = true;
+            beatScroller.hasStarted = true;
             audioSource.Play();
             return;
         }
@@ -73,10 +115,10 @@ public class GameManager :MonoBehaviour
     {
         resultsScreen.SetActive(true);
 
-        normalHitTxt.text = normalHits.ToString();
-        goodHitTxt.text = goodHits.ToString();
-        perfectHitTxt.text = perfectHits.ToString();
-        missedHitTxt.text = missedHits.ToString();
+        normalHitTxt.text = normalHits.ToString(CultureInfo.CurrentCulture);
+        goodHitTxt.text = goodHits.ToString(CultureInfo.CurrentCulture);
+        perfectHitTxt.text = perfectHits.ToString(CultureInfo.CurrentCulture);
+        missedHitTxt.text = missedHits.ToString(CultureInfo.CurrentCulture);
 
         var totalHit = normalHits + goodHits + perfectHits;
         var percentHit = (totalNotes > 0) ? (totalHit / totalNotes) * 100f : 0f;
