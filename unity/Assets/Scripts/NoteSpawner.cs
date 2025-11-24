@@ -15,19 +15,19 @@ public class NoteSpawner : MonoBehaviour
     public float spawnLeadTime = 2f;   // how early to spawn before it reaches button
     public AudioSource music;
 
-    private int nextIndex = 0;
+    int nextIndex;
 
     void Update()
     {
         if (nextIndex >= notes.Length) return;
 
-        float songTime = music.time;
+        var songTime = music.time;
 
         if (songTime + spawnLeadTime >= notes[nextIndex].time)
         {
             var data = notes[nextIndex];
 
-            GameObject prefabToSpawn = data.isLongNote ? longNotePrefab : shortNotePrefab;
+            var prefabToSpawn = data.isLongNote ? longNotePrefab : shortNotePrefab;
             Instantiate(prefabToSpawn, transform.position, Quaternion.identity);
 
             nextIndex++;

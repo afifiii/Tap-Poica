@@ -1,49 +1,51 @@
 using UnityEngine;
 
-public class NoteObject : MonoBehaviour
+public class NoteObject :MonoBehaviour
 {
-    [Header("Note Settings")]
-    public bool canBePressed = false;
-    public bool isLongNote = false;
-    public bool isBeingHeld = false;
+    [Header("Note Settings")] public bool canBePressed;
+    public bool isLongNote;
+    public bool isBeingHeld;
     public KeyCode keyToPress;
 
-    [Header("Effects")]
-    public GameObject hiteffect, goodeffect, perfecteffect, misseffect;
+    [Header("Effects")] public GameObject hitEffect, goodEffect, perfectEffect, missEffect;
 
     void Update()
     {
         // Optional manual key press //to change
-        if (Input.GetKeyDown(keyToPress) && canBePressed)
-        {
-            Pressed();
-        }
+        if(!Input.GetKeyDown(keyToPress) || !canBePressed) return;
+        Pressed();
     }
 
     // Called when a single note is hit
     public void Pressed() //to change - timely pressed
     {
-        if (!canBePressed) return;
+        if(!canBePressed) return;
 
-        float yDist = Mathf.Abs(transform.position.y);
+        var yDist = Mathf.Abs(transform.position.y);
 
-        if (yDist > 0.5f)
+        switch (yDist)
         {
-            Debug.Log("Good!");
-            GameManager.instance.GoodHit();
-            if (goodeffect) Instantiate(goodeffect, transform.position, goodeffect.transform.rotation);
-        }
-        else if (yDist > 0.25f)
-        {
-            Debug.Log("Hit!");
-            GameManager.instance.NormalHit();
-            if (hiteffect) Instantiate(hiteffect, transform.position, hiteffect.transform.rotation);
-        }
-        else
-        {
-            Debug.Log("Perfect!");
-            GameManager.instance.PerfectHit();
-            if (perfecteffect) Instantiate(perfecteffect, transform.position, perfecteffect.transform.rotation);
+            case > 0.5f:
+            {
+                Debug.Log("Good!");
+                GameManager.Instance.GoodHit();
+                if(goodEffect) Instantiate(goodEffect, transform.position, goodEffect.transform.rotation);
+                break;
+            }
+            case > 0.25f:
+            {
+                Debug.Log("Hit!");
+                GameManager.Instance.NormalHit();
+                if(hitEffect) Instantiate(hitEffect, transform.position, hitEffect.transform.rotation);
+                break;
+            }
+            default:
+            {
+                Debug.Log("Perfect!");
+                GameManager.Instance.PerfectHit();
+                if(perfectEffect) Instantiate(perfectEffect, transform.position, perfectEffect.transform.rotation);
+                break;
+            }
         }
 
         canBePressed = false;
@@ -53,7 +55,7 @@ public class NoteObject : MonoBehaviour
     // Called when player starts holding a long note
     public void HoldStart()
     {
-        if (!isLongNote) return;
+        if(!isLongNote) return;
         isBeingHeld = true;
         canBePressed = false;
     }
@@ -61,26 +63,24 @@ public class NoteObject : MonoBehaviour
     // Called when player stops holding a long note
     public void HoldEnd()
     {
-        if (!isBeingHeld) return;
+        if(!isBeingHeld) return;
         isBeingHeld = false;
 
-        GameManager.instance.GoodHit(); // Example: reward for holding
+        GameManager.Instance.GoodHit(); // Example: reward for holding
         Destroy(gameObject);
     }
 
-    private void OnTriggerEnter2D(Collider2D other)
+    void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Activator"))
-            canBePressed = true;
+        if(!other.CompareTag("Activator")) return;
+        canBePressed = true;
     }
 
-    private void OnTriggerExit2D(Collider2D other)
+    void OnTriggerExit2D(Collider2D other)
     {
-        if (other.CompareTag("Activator"))
-        {
-            canBePressed = false;
-            GameManager.instance.NoteMissed();
-            if (misseffect) Instantiate(misseffect, transform.position, misseffect.transform.rotation);
-        }
+        if(!other.CompareTag("Activator")) return;
+        canBePressed = false;
+        GameManager.Instance.NoteMissed();
+        if(missEffect) Instantiate(missEffect, transform.position, missEffect.transform.rotation);
     }
 }

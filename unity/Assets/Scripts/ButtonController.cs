@@ -3,20 +3,20 @@ using UnityEngine;
 public class ButtonController :MonoBehaviour
 
 {
-    private SpriteRenderer theSR;
+    SpriteRenderer _spriteRenderer;
     public Sprite defaultImage;
     public Sprite pressedImage;
    //public KeyCode keyToPress;
 
     void Start()
     {
-        theSR = GetComponent<SpriteRenderer>();
+        _spriteRenderer = GetComponent<SpriteRenderer>();
 
     }
 
     void ResetSprite()
         {
-        theSR.sprite = defaultImage;
+        _spriteRenderer.sprite = defaultImage;
     /*  void Update()
       {
           if(Input.GetKeyDown(keyToPress))
@@ -33,21 +33,21 @@ public class ButtonController :MonoBehaviour
 
     public void OnTapFromController()
     {
-        theSR.sprite = pressedImage;
-        GameManager.instance.HitNote();
+        _spriteRenderer.sprite = pressedImage;
+        GameManager.Instance.HitNote();
         Invoke(nameof(ResetSprite), 0.12f);
     }
 
     public void OnHoldStartFromController()
     {
-        theSR.sprite = pressedImage;
-        GameManager.instance.HoldStart();
+        _spriteRenderer.sprite = pressedImage;
+        GameManager.Instance.HoldStart();
     }
 
     public void OnHoldEndFromController()
     {
         ResetSprite();
-        GameManager.instance.HoldEnd();
+        GameManager.Instance.HoldEnd();
     }
 
 }

@@ -1,34 +1,30 @@
-﻿using UnityEngine;
+﻿using System.Globalization;
+using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
-public class GameManager : MonoBehaviour
+public class GameManager :MonoBehaviour
 {
-    public static GameManager instance;
+    public static GameManager Instance;
 
-    [Header("Audio & Gameplay")]
-    public AudioSource theMusic;
-    public BeatScroller theBS;
-    private bool startingPoint;
-    private bool resultsShown = false;
+    [Header("Audio & Gameplay")] public AudioSource theMusic;
+    public BeatScroller beatScroller;
+    bool _startingPoint;
+    bool _resultsShown;
 
-    [Header("Score Settings")]
-    public int currentScore;
+    [Header("Score Settings")] public int currentScore;
     public int scorePerNote = 100;
     public int scorePerGoodNote = 125;
     public int scorePerPerfectNote = 150;
 
-    [Header("Multiplier Settings")]
-    public int currentMultiplier;
+    [Header("Multiplier Settings")] public int currentMultiplier;
     public int multiplierTracker;
     public int[] multiplierThresholds;
 
-    [Header("UI Elements")]
-    public Text scoreTxt;
+    [Header("UI Elements")] public Text scoreTxt;
     public Text multiTxt;
 
-    [Header("Results UI")]
-    public GameObject resultsScreen;
+    [Header("Results UI")] public GameObject resultsScreen;
     public Text percentHitTxt;
     public Text normalHitTxt;
     public Text goodHitTxt;
@@ -37,11 +33,9 @@ public class GameManager : MonoBehaviour
     public Text rankTxt;
     public Text finalScoreText;
 
-    [Header("Next Level Button")]
-    public Button nextLevelButton;
+    [Header("Next Level Button")] public Button nextLevelButton;
 
-    [Header("Stats Tracking")]
-    public float totalNotes;
+    [Header("Stats Tracking")] public float totalNotes;
     public float normalHits;
     public float goodHits;
     public float perfectHits;
@@ -49,12 +43,12 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        instance = this;
+        Instance = this;
 
         scoreTxt.text = "Score: 0";
         currentMultiplier = 1;
 
-        totalNotes = FindObjectsOfType<NoteObject>().Length;
+        totalNotes = FindObjectsByType<NoteObject>(FindObjectsSortMode.None).Length;
 
         resultsScreen.SetActive(false);
         nextLevelButton.gameObject.SetActive(false);
@@ -63,44 +57,38 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        if (!startingPoint)
-        {
-            if (Input.anyKeyDown)
-            {
-                startingPoint = true;
-                theBS.hasStarted = true;
-                theMusic.Play();
-            }
-        }
-        else
-        {
-            if (!resultsShown && !theMusic.isPlaying)
-            {
-                ShowResults();
-                resultsShown = true;
-            }
-        }
+        if(_startingPoint || Input.anyKeyDown) return;
+        _startingPoint = true;
+        beatScroller.hasStarted = true;
+        theMusic.Play();
+
+        if(_resultsShown || theMusic.isPlaying) return;
+        ShowResults();
+        _resultsShown = true;
     }
 
     void ShowResults()
     {
         resultsScreen.SetActive(true);
 
-        normalHitTxt.text = normalHits.ToString();
-        goodHitTxt.text = goodHits.ToString();
-        perfectHitTxt.text = perfectHits.ToString();
-        missedHitTxt.text = missedHits.ToString();
+        normalHitTxt.text = normalHits.ToString(CultureInfo.CurrentCulture);
+        goodHitTxt.text = goodHits.ToString(CultureInfo.CurrentCulture);
+        perfectHitTxt.text = perfectHits.ToString(CultureInfo.CurrentCulture);
+        missedHitTxt.text = missedHits.ToString(CultureInfo.CurrentCulture);
 
-        float totalHit = normalHits + goodHits + perfectHits;
-        float percentHit = (totalNotes > 0) ? (totalHit / totalNotes) * 100f : 0f;
+        var totalHit = normalHits + goodHits + perfectHits;
+        var percentHit = (totalNotes > 0) ? (totalHit / totalNotes) * 100f : 0f;
         percentHitTxt.text = percentHit.ToString("F1") + "%";
 
-        string rankVal = "F";
-        if (percentHit > 95) rankVal = "S";
-        else if (percentHit > 85) rankVal = "A";
-        else if (percentHit > 70) rankVal = "B";
-        else if (percentHit > 55) rankVal = "C";
-        else if (percentHit > 40) rankVal = "D";
+        var rankVal = percentHit switch
+        {
+            > 95 => "S",
+            > 85 => "A",
+            > 70 => "B",
+            > 55 => "C",
+            > 40 => "D",
+            _ => "F"
+        };
         rankTxt.text = rankVal;
 
         finalScoreText.text = currentScore.ToString();
@@ -108,61 +96,53 @@ public class GameManager : MonoBehaviour
         nextLevelButton.gameObject.SetActive(true);
     }
 
-    // --- Hit & Hold Notes Programmatically ---
+// --- Hit & Hold Notes Programmatically ---
     public void HitNote()
     {
-        NoteObject[] notes = FindObjectsOfType<NoteObject>();
+        var notes = FindObjectsByType<NoteObject>(FindObjectsSortMode.None);
         NoteObject closest = null;
-        float bestDist = Mathf.Infinity;
+        var bestDist = Mathf.Infinity;
 
         foreach (var n in notes)
         {
-            if (n.canBePressed)
-            {
-                float d = Mathf.Abs(n.transform.position.y);
-                if (d < bestDist)
-                {
-                    bestDist = d;
-                    closest = n;
-                }
-            }
+            var d = Mathf.Abs(n.transform.position.y);
+            if(!n.canBePressed && d >= bestDist) continue;
+            bestDist = d;
+            closest = n;
         }
 
-        if (closest != null)
-            closest.Pressed();
+        if(!closest) return;
+        closest.Pressed();
     }
 
     public void HoldStart()
     {
-        foreach (var n in FindObjectsOfType<NoteObject>())
+        foreach (var n in FindObjectsByType<NoteObject>(FindObjectsSortMode.None))
         {
-            if (n.canBePressed && n.isLongNote)
-            {
-                n.HoldStart();
-                return;
-            }
+            if(!n.canBePressed || !n.isLongNote) continue;
+            n.HoldStart();
+            return;
         }
     }
 
     public void HoldEnd()
     {
-        foreach (var n in FindObjectsOfType<NoteObject>())
+        foreach (var n in FindObjectsByType<NoteObject>(FindObjectsSortMode.None))
         {
-            if (n.isBeingHeld)
-            {
-                n.HoldEnd();
-                return;
-            }
+            if(!n.isBeingHeld) continue;
+            n.HoldEnd();
+            return;
         }
     }
 
-    // --- Scoring System ---
+// --- Scoring System ---
     public void NoteHit()
     {
-        if (currentMultiplier - 1 < multiplierThresholds.Length)
+        if(currentMultiplier - 1 < multiplierThresholds.Length)
         {
             multiplierTracker++;
-            if (multiplierThresholds[currentMultiplier - 1] <= multiplierTracker)
+
+            if(multiplierThresholds[currentMultiplier - 1] <= multiplierTracker)
             {
                 multiplierTracker = 0;
                 currentMultiplier++;
@@ -202,17 +182,17 @@ public class GameManager : MonoBehaviour
         missedHits++;
     }
 
-    // ----------------------------------------------------------
-    // NEXT LEVEL BUTTON → Load next scene
-    // ----------------------------------------------------------
+// ----------------------------------------------------------
+// NEXT LEVEL BUTTON → Load next scene
+// ----------------------------------------------------------
     public void LoadNextLevel()
     {
         Time.timeScale = 1f;
 
-        int currentIndex = SceneManager.GetActiveScene().buildIndex;
-        int nextIndex = currentIndex + 1;
+        var currentIndex = SceneManager.GetActiveScene().buildIndex;
+        var nextIndex = currentIndex + 1;
 
-        if (nextIndex < SceneManager.sceneCountInBuildSettings)
+        if(nextIndex < SceneManager.sceneCountInBuildSettings)
         {
             SceneManager.LoadScene(nextIndex);
         }
@@ -222,9 +202,9 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // ----------------------------------------------------------
-    // EXIT LAST LEVEL → Load specific scene (e.g. Main Menu)
-    // ----------------------------------------------------------
+// ----------------------------------------------------------
+// EXIT LAST LEVEL → Load specific scene (e.g. Main Menu)
+// ----------------------------------------------------------
     public void ExitToScene(string sceneName)
     {
         Time.timeScale = 1f;
