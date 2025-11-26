@@ -39,10 +39,10 @@ public class NoteObject : MonoBehaviour
         tailCollider.transform.Translate(Vector3.up * visualHeight);
     }
 
-    void Update()
+    void FixedUpdate()
     {
-        _lifetime += Time.deltaTime;
-        var distance = _speed * Time.deltaTime * Vector3.down;
+        _lifetime += Time.fixedDeltaTime;
+        var distance = _speed * Time.fixedDeltaTime * Vector3.down;
         transform.Translate(distance);
         // Optional manual key press //to change
         if (!Input.GetKeyDown(keyToPress) || !canBePressed) return;

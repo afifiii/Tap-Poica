@@ -2210,6 +2210,7 @@ MonoBehaviour:
   difficulty: 1
   shortNotePrefab: {fileID: 8664187275873934975, guid: 7eea74282711d0246b1d57ba71722ccd, type: 3}
   longNotePrefab: {fileID: 5732230104749981023, guid: b3c0518bec97b0b4b9fad17c3aad75e6, type: 3}
+  offsetMs: 100
   noteStart: 9
   leadTimeMs: 1000
   currentScore: 0

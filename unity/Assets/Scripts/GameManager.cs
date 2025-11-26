@@ -16,6 +16,7 @@ public class GameManager : MonoBehaviour
     [Header("Note Settings")]
     public GameObject shortNotePrefab;
     public GameObject longNotePrefab;
+    public float offsetMs = 100f; // offset to sync with music
     public float noteStart = 9f;
     public float leadTimeMs = 2000f; // how early to spawn before it reaches button
 
@@ -58,6 +59,9 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
+        // 240FPS for notes spawning
+        Time.fixedDeltaTime = 1f / 240f;
+
         Instance = this;
         _levelLoader = gameObject.AddComponent<LevelLoader>();
         _levelLoader.Load(level, difficulty, OnLevelReady);
@@ -95,6 +99,7 @@ public class GameManager : MonoBehaviour
         _noteSpawner.transform.position = Vector3.up * noteStart;
         _noteSpawner.longNotePrefab = longNotePrefab;
         _noteSpawner.shortNotePrefab = shortNotePrefab;
+        _noteSpawner.offsetMs = offsetMs;
         _noteSpawner.noteStart = noteStart;
         _noteSpawner.leadTimeMs = leadTimeMs;
         _noteSpawner.Initialize(osuBeatmap, _music);
