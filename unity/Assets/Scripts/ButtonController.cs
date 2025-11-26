@@ -6,7 +6,7 @@ public class ButtonController :MonoBehaviour
     SpriteRenderer _spriteRenderer;
     public Sprite defaultImage;
     public Sprite pressedImage;
-   //public KeyCode keyToPress;
+    //public KeyCode keyToPress;
 
     void Start()
     {
@@ -15,21 +15,21 @@ public class ButtonController :MonoBehaviour
     }
 
     void ResetSprite()
-        {
+    {
         _spriteRenderer.sprite = defaultImage;
-    /*  void Update()
-      {
-          if(Input.GetKeyDown(keyToPress))
+        /*  void Update()
           {
-              theSR.sprite = pressedImage;
-          }
+              if(Input.GetKeyDown(keyToPress))
+              {
+                  theSR.sprite = pressedImage;
+              }
 
-          if(Input.GetKeyUp(keyToPress))
-          {
-              theSR.sprite = defaultImage;
-          } */  
+              if(Input.GetKeyUp(keyToPress))
+              {
+                  theSR.sprite = defaultImage;
+              } */
 
-      }
+    }
 
     public void OnTapFromController()
     {

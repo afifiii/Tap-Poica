@@ -5,6 +5,9 @@ TagManager:
   serializedVersion: 3
   tags:
   - Activator
+  - Long Bar
+  - Tail
+  - Head
   layers:
   - Default
   - TransparentFX

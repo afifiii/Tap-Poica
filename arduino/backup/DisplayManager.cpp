@@ -8,7 +8,8 @@ DisplayManager::DisplayManager(TinyScreen &display, Timer &state,
       _lastSecondDisplayed(-1), _lastSetBrightness(100),
       _lastAmtNotificationsShown(-1), _lastMainDisplayUpdate(0),
       _mainDisplayUpdateInterval(300), rewriteTime(true), rewriteMenu(false),
-      bleConnectionDisplayedState(true), notificationLine1(""), notificationLine2("") {}
+      bleConnectionDisplayedState(true), notificationLine1(""),
+      notificationLine2("") {}
 
 void DisplayManager::begin() {
   _menuManager.RTCZ.begin();
@@ -79,6 +80,13 @@ void DisplayManager::update() {
 
 void DisplayManager::initHomeScreen() {
   _ts.clearWindow(0, 12, 96, 64);
+  _lastDisplayedDay = -1;
+  _lastDisplayedMonth = -1;
+  _lastAMPMDisplayed = 0;
+  _lastHourDisplayed = -1;
+  _lastMinuteDisplayed = -1;
+  _lastSecondDisplayed = -1;
+  bleConnectionDisplayedState = -1;
   rewriteTime = true;
   rewriteMenu = true;
   updateMainDisplay();
@@ -136,8 +144,7 @@ void DisplayManager::updateMainDisplay() {
   displayBattery();
   if (_timer.currentDisplayState == Timer::STATE_HOME) {
     updateTimeDisplay();
-    if (rewriteMenu ||
-        _lastAmtNotificationsShown != _timer.amtNotifications) {
+    if (rewriteMenu || _lastAmtNotificationsShown != _timer.amtNotifications) {
       _lastAmtNotificationsShown = _timer.amtNotifications;
       _ts.setFont(FONT_10_PT);
       _ts.clearWindow(0, _menuManager.menuTextY[2], 96, 13);
@@ -298,11 +305,11 @@ void DisplayManager::displayBattery() {
   _ts.drawLine(x - 1, y, x - 1, y + height, 0xFF);     // left boarder
   _ts.drawLine(x - 1, y - 1, x + length, y - 1, 0xFF); // top border
   _ts.drawLine(x - 1, y + height + 1, x + length, y + height + 1,
-              0xFF); // bottom border
+               0xFF); // bottom border
   _ts.drawLine(x + length, y - 1, x + length, y + height + 1,
-              0xFF); // right border
+               0xFF); // right border
   _ts.drawLine(x + length + 1, y + 2, x + length + 1, y + height - 2,
-              0xFF); // right border
+               0xFF); // right border
   for (uint8_t i = 0; i < length; i++) {
     _ts.drawLine(x + i, y, x + i, y + height, red, green, 0);
   }

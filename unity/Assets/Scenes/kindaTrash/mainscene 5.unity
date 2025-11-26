@@ -327,39 +327,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   shortNotePrefab: {fileID: 546700653779091632, guid: b53c05f6d79b3e849ab81b1d10e5d3fc, type: 3}
   longNotePrefab: {fileID: 4037412201650911037, guid: 2437b11b6d73af94185ac5a05c5d3071, type: 3}
-  notes:
-  - time: 1.2
-    isLongNote: 0
-  - time: 2.4
-    isLongNote: 1
-  - time: 3.8
-    isLongNote: 0
-  - time: 5.1
-    isLongNote: 0
-  - time: 6.5
-    isLongNote: 1
-  - time: 7.9
-    isLongNote: 1
-  - time: 8.6
-    isLongNote: 0
-  - time: 9.6
-    isLongNote: 1
-  - time: 11
-    isLongNote: 0
-  - time: 11.8
-    isLongNote: 1
-  - time: 12.9
-    isLongNote: 0
-  - time: 13.5
-    isLongNote: 0
-  - time: 14.2
-    isLongNote: 1
-  - time: 15.8
-    isLongNote: 1
-  - time: 17
-    isLongNote: 0
+  noteSpeed: 10
   spawnLeadTime: 1
-  music: {fileID: 1896633867}
 --- !u!4 &184268475
 Transform:
   m_ObjectHideFlags: 0
@@ -2091,8 +2060,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 16d8edd861b1c8d48b733050776285e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  theMusic: {fileID: 1896633867}
-  theBS: {fileID: 1285413253}
+  music: {fileID: 1896633867}
+  beatScroller: {fileID: 1285413253}
+  levelName: Iris Out
+  difficulty: 1
   currentScore: 0
   scorePerNote: 100
   scorePerGoodNote: 125
@@ -2100,22 +2071,17 @@ MonoBehaviour:
   currentMultiplier: 1
   multiplierTracker: 0
   multiplierThresholds: 040000000800000010000000
-  scoreTxt: {fileID: 1791990394}
-  multiTxt: {fileID: 2046179001}
+  scoreTxt: {fileID: 0}
+  multiTxt: {fileID: 0}
   resultsScreen: {fileID: 766832845}
-  percentHitTxt: {fileID: 1903861623}
-  normalHitTxt: {fileID: 1991264647}
-  goodHitTxt: {fileID: 1982387921}
-  perfectHitTxt: {fileID: 723331160}
-  missedHitTxt: {fileID: 325538177}
-  rankTxt: {fileID: 1294892955}
-  finalScoreText: {fileID: 745663033}
+  percentHitTxt: {fileID: 0}
+  normalHitTxt: {fileID: 0}
+  goodHitTxt: {fileID: 0}
+  perfectHitTxt: {fileID: 0}
+  missedHitTxt: {fileID: 0}
+  rankTxt: {fileID: 0}
+  finalScoreText: {fileID: 0}
   nextLevelButton: {fileID: 1109595230}
-  totalNotes: 0
-  normalHits: 0
-  goodHits: 0
-  perfectHits: 0
-  missedHits: 0
 --- !u!1 &1601014004
 GameObject:
   m_ObjectHideFlags: 0

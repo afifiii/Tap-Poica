@@ -1,4 +1,3 @@
-
 using System;
 using UnityEngine;
 
@@ -17,7 +16,8 @@ public class RhythmLevelData
 
 public static class RhythmLevels
 {
-    public static readonly RhythmLevelData[] Levels = {
+    public static readonly RhythmLevelData[] Levels =
+    {
         new()
         {
             levelNumber = 1,
@@ -82,7 +82,7 @@ public static class RhythmLevels
     public static RhythmLevelData GetLevel(int levelNumber)
     {
         foreach (var lvl in Levels)
-            if (lvl.levelNumber == levelNumber)
+            if(lvl.levelNumber == levelNumber)
                 return lvl;
 
         Debug.LogError("Level not found: " + levelNumber);
