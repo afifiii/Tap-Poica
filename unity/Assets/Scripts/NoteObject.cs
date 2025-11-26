@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class NoteObject :MonoBehaviour
+public class NoteObject : MonoBehaviour
 {
     [Header("Note Settings")] public bool canBePressed;
     public NoteType noteType;
@@ -20,25 +20,25 @@ public class NoteObject :MonoBehaviour
         _duration = data.durationMs;
         _speed = speed;
 
-        if(noteType != NoteType.Long) return;
+        if (noteType != NoteType.Long) return;
         var collider = gameObject.GetComponent<BoxCollider2D>();
         var line = gameObject.GetComponent<LineRenderer>();
         var ends = FindObjectsByType<CircleCollider2D>(FindObjectsSortMode.None);
         CircleCollider2D tail = null;
 
         foreach (var end in ends)
-            if(end.CompareTag("Tail"))
+            if (end.CompareTag("Tail"))
                 tail = end;
 
         var visualHeight = speed * (float)_duration / 1000f;
-        Vector3 pointPositions[2] = new Vector3[2];
+        Vector3[] pointPositions = new Vector3[2];
         line.GetPositions(pointPositions);
         // bar.transform.localScale = new Vector3(1, visualHeight, 1);
         pointPositions[1] = new Vector3(pointPositions[1].x, visualHeight, pointPositions[1].z);
         // bar.
         // bar.size = new Vector2(bar.size.x, visualHeight);
 
-        if(!tail) return;
+        if (!tail) return;
         tail.transform.localPosition =
             new Vector3(tail.transform.localPosition.x, visualHeight, tail.transform.localPosition.z);
         // tail.transform.position = new Vector3(tail.transform.position.x, tail.transform.position.y + visualHeight,
@@ -49,25 +49,25 @@ public class NoteObject :MonoBehaviour
     {
         transform.Translate(_speed * Time.deltaTime * Vector3.down);
         // Optional manual key press //to change
-        if(!Input.GetKeyDown(keyToPress) || !canBePressed) return;
+        if (!Input.GetKeyDown(keyToPress) || !canBePressed) return;
         Pressed();
 
-        if(noteType != NoteType.Long) return;
+        if (noteType != NoteType.Long) return;
 
-        if(Input.GetKey(keyToPress) && canBePressed && !isBeingHeld)
+        if (Input.GetKey(keyToPress) && canBePressed && !isBeingHeld)
         {
             // Logic to start holding if we hit the head successfully
             // (Usually called inside Pressed() if it's a long note)
         }
 
-        if(!Input.GetKeyUp(keyToPress) || !isBeingHeld) return;
+        if (!Input.GetKeyUp(keyToPress) || !isBeingHeld) return;
         HoldEnd();
     }
 
     // Called when a single note is hit
     public void Pressed() //to change - timely pressed
     {
-        if(!canBePressed) return;
+        if (!canBePressed) return;
 
         var yDist = Mathf.Abs(transform.position.y);
 
@@ -80,7 +80,7 @@ public class NoteObject :MonoBehaviour
     // Called when player starts holding a long note
     public void HoldStart()
     {
-        if(noteType != NoteType.Long) return;
+        if (noteType != NoteType.Long) return;
         isBeingHeld = true;
         // canBePressed = false;
     }
@@ -88,7 +88,7 @@ public class NoteObject :MonoBehaviour
     // Called when player stops holding a long note
     public void HoldEnd()
     {
-        if(!isBeingHeld) return;
+        if (!isBeingHeld) return;
         isBeingHeld = false;
 
         // Calculate Tail Distance
@@ -107,7 +107,7 @@ public class NoteObject :MonoBehaviour
 
     void SpawnEffect(GameObject effectPrefab)
     {
-        if(effectPrefab) Instantiate(effectPrefab, transform.position, effectPrefab.transform.rotation);
+        if (effectPrefab) Instantiate(effectPrefab, transform.position, effectPrefab.transform.rotation);
     }
 
     void Judge(float distance)
@@ -136,16 +136,16 @@ public class NoteObject :MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if(!other.CompareTag("Activator")) return;
+        if (!other.CompareTag("Activator")) return;
         canBePressed = true;
     }
 
     void OnTriggerExit2D(Collider2D other)
     {
-        if(!other.CompareTag("Activator")) return;
+        if (!other.CompareTag("Activator")) return;
         canBePressed = false;
         GameManager.Instance.NoteMissed();
         SpawnEffect(missEffect);
-        if(missEffect) Instantiate(missEffect, transform.position, missEffect.transform.rotation);
+        if (missEffect) Instantiate(missEffect, transform.position, missEffect.transform.rotation);
     }
 }
