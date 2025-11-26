@@ -81,7 +81,7 @@ public class NoteSpawner : MonoBehaviour
         }
 
         // var musicTimeMs = _audioSource.time * 1000;
-        noteObject.Initialize(data, noteStart / leadTimeMs * 1000f);
+        noteObject.Initialize(data, noteStart / leadTimeMs * 1000f, leadTimeMs);
 
         _nextIndex++;
     }

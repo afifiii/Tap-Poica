@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class GameManager :MonoBehaviour
+public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
@@ -55,9 +55,11 @@ public class GameManager :MonoBehaviour
     LevelLoader _levelLoader;
     AudioSource _music;
 
+    bool _isHolding = false;
+
     void Awake()
     {
-        if(Instance != null)
+        if (Instance != null)
         {
             Destroy(gameObject);
             return;
@@ -90,13 +92,13 @@ public class GameManager :MonoBehaviour
 
     void Update()
     {
-        if(!_levelLoaded) return;
+        if (!_levelLoaded) return;
 
-        if(_startingPoint || Input.anyKeyDown) return;
+        if (_startingPoint || Input.anyKeyDown) return;
         _startingPoint = true;
         // beatScroller.hasStarted = true;
 
-        if(_resultsShown || _music.isPlaying) return;
+        if (_resultsShown || _music.isPlaying) return;
         ShowResults();
         _resultsShown = true;
     }
@@ -155,20 +157,22 @@ public class GameManager :MonoBehaviour
         foreach (var n in notes)
         {
             var d = Mathf.Abs(n.transform.position.y);
-            if(!n.canBePressed && d >= bestDist) continue;
+            if (!n.CanBePressed() || n.noteType != NoteType.Short) continue;
+            if (d >= bestDist) continue;
             bestDist = d;
             closest = n;
         }
 
-        if(!closest) return;
+        if (!closest) return;
         closest.Pressed();
     }
 
     public void HoldStart()
     {
+        _isHolding = true;
         foreach (var n in FindObjectsByType<NoteObject>(FindObjectsSortMode.None))
         {
-            if(!n.canBePressed || n.noteType != NoteType.Long) continue;
+            if (!n.CanBePressed() || n.noteType != NoteType.Long) continue;
             n.HoldStart();
             return;
         }
@@ -176,9 +180,10 @@ public class GameManager :MonoBehaviour
 
     public void HoldEnd()
     {
+        _isHolding = false;
         foreach (var n in FindObjectsByType<NoteObject>(FindObjectsSortMode.None))
         {
-            if(!n.isBeingHeld) continue;
+            if (!n.isBeingHeld || n.noteType != NoteType.Long) continue;
             n.HoldEnd();
             return;
         }
@@ -187,11 +192,11 @@ public class GameManager :MonoBehaviour
     // --- Scoring System ---
     public void NoteHit()
     {
-        if(currentMultiplier - 1 < multiplierThresholds.Length)
+        if (currentMultiplier - 1 < multiplierThresholds.Length)
         {
             multiplierTracker++;
 
-            if(multiplierThresholds[currentMultiplier - 1] <= multiplierTracker)
+            if (multiplierThresholds[currentMultiplier - 1] <= multiplierTracker)
             {
                 multiplierTracker = 0;
                 currentMultiplier++;

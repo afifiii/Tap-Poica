@@ -8,62 +8,108 @@ public class NoteObject : MonoBehaviour
     public BoxCollider2D lineCollider;
     public CircleCollider2D tailCollider, headCollider;
 
-    const float WindowGood = 2f;
-    const float WindowNormal = 1.5f;
+    const float WindowMissMs = 400f;
+    const float WindowGoodMs = 250f;
+    const float WindowNormalMs = 120f;
 
     [Header("Effects")] public GameObject hitEffect;
     public GameObject goodEffect, perfectEffect, missEffect;
 
-    [HideInInspector] public bool isBeingHeld;
-    [HideInInspector] public bool canBePressed;
+    [HideInInspector] public bool isBeingHeld = false;
     float _speed;
-    double _duration;
-    float _lifetime;
+    double _durationMs;
+    float _lifetimeMs;
 
-    public void Initialize(NoteData data, float speed)
+    public void Initialize(NoteData data, float speed, float lifetimeMs)
     {
-        _duration = data.durationMs;
+        _durationMs = data.durationMs;
         _speed = speed;
+        _lifetimeMs = lifetimeMs;
 
         if (noteType != NoteType.Long) return;
 
-        var visualHeight = speed * (float)_duration / 1000f;
+        var visualHeight = speed * (float)_durationMs / 1000f;
         transform.Translate(Vector3.up * visualHeight);
         line.transform.localScale = new Vector3(line.transform.localScale.x, visualHeight, line.transform.localScale.z);
+        lineCollider.transform.localScale = new Vector3(lineCollider.transform.localScale.x, visualHeight, lineCollider.transform.localScale.z);
         tailCollider.transform.localPosition = Vector3.up * visualHeight / 2f;
         headCollider.transform.localPosition = Vector3.down * visualHeight / 2f;
     }
 
+    public void OnDestroy()
+    {
+        if (noteType == NoteType.Long)
+        {
+            Destroy(lineCollider.gameObject);
+            Destroy(headCollider.gameObject);
+            Destroy(tailCollider.gameObject);
+        }
+    }
+
     void FixedUpdate()
     {
-        _lifetime += Time.fixedDeltaTime;
+        _lifetimeMs -= Time.fixedDeltaTime * 1000f;
         transform.Translate(_speed * Time.fixedDeltaTime * Vector3.down);
-        // Optional manual key press //to change
-        if (!Input.GetKeyDown(keyToPress) || !canBePressed) return;
-        Pressed();
 
-        if (noteType != NoteType.Long) return;
-
-        if (Input.GetKey(keyToPress) && canBePressed && !isBeingHeld)
+        if (TooLate())
         {
-            // Logic to start holding if we hit the head successfully
-            // (Usually called inside Pressed() if it's a long note)
+            GameManager.Instance.NoteMissed();
+            SpawnEffect(missEffect);
+            Destroy(gameObject);
+            return;
         }
 
-        if (!Input.GetKeyUp(keyToPress) || !isBeingHeld) return;
-        HoldEnd();
+        TryToPress();
+    }
+
+    public bool CanBePressed()
+    {
+        return _lifetimeMs <= WindowMissMs;
+    }
+
+    public bool TryToPress()
+    {
+        // Cannot be pressed yet
+        if (!CanBePressed()) return false;
+
+        switch (noteType)
+        {
+            case NoteType.Short:
+                if (Input.GetKeyDown(keyToPress))
+                {
+                    Pressed();
+                }
+                break;
+            case NoteType.Long:
+                if (Input.GetKeyDown(keyToPress) && !isBeingHeld)
+                {
+                    HoldStart();
+                }
+                else if (Input.GetKeyUp(keyToPress) && isBeingHeld)
+                {
+                    HoldEnd();
+                }
+                break;
+        }
+        return true;
+    }
+
+    public bool TooLate()
+    {
+        switch (noteType)
+        {
+            case NoteType.Short:
+                return _lifetimeMs < -WindowMissMs;
+            case NoteType.Long:
+                return _lifetimeMs + (float)_durationMs < -WindowMissMs;
+        }
+        return true;
     }
 
     // Called when a single note is hit
-    public void Pressed() //to change - timely pressed
+    public void Pressed()
     {
-        if (!canBePressed) return;
-
-        var yDist = Mathf.Abs(transform.position.y);
-
-        Judge(yDist);
-
-        canBePressed = false;
+        Judge(_lifetimeMs);
         Destroy(gameObject);
     }
 
@@ -72,11 +118,7 @@ public class NoteObject : MonoBehaviour
     {
         if (noteType != NoteType.Long) return;
         isBeingHeld = true;
-
-        var yDist = Mathf.Abs(transform.position.y);
-
-        Judge(yDist);
-        // canBePressed = false;
+        Judge(_lifetimeMs);
     }
 
     // Called when player stops holding a long note
@@ -85,70 +127,52 @@ public class NoteObject : MonoBehaviour
         if (!isBeingHeld) return;
         isBeingHeld = false;
 
-        // Calculate Tail Distance
-        var headY = transform.position.y;
-        var noteHeight = transform.localScale.y;
-        var tailY = headY + noteHeight;
-
-        var dist = Mathf.Abs(tailY); // assuming judgment line is at 0
-
-        // Use EXACT same judgment as Pressed
-        Judge(dist);
-
-        GameManager.Instance.GoodHit(); // Example: reward for holding
-        Destroy(gameObject);
-    }
-
-    void SpawnEffect(GameObject effectPrefab)
-    {
-        if (effectPrefab) Instantiate(effectPrefab, transform.position, effectPrefab.transform.rotation);
-    }
-
-    void Judge(float distance)
-    {
-        switch (distance)
-        {
-            case > WindowGood: // > 0.5
-                // Debug.Log("Good!");
-                GameManager.Instance.GoodHit();
-                SpawnEffect(goodEffect);
-                break;
-
-            case > WindowNormal: // > 0.25
-                // Debug.Log("Hit!");
-                GameManager.Instance.NormalHit();
-                SpawnEffect(hitEffect);
-                break;
-
-            default: // <= 0.25 (The best one)
-                // Debug.Log("Perfect!");
-                GameManager.Instance.PerfectHit();
-                SpawnEffect(perfectEffect);
-                break;
-        }
-    }
-
-    void OnTriggerEnter2D(Collider2D other)
-    {
-        if (!other.CompareTag("Activator")) return;
-        canBePressed = true;
-    }
-
-    void OnTriggerExit2D(Collider2D other)
-    {
-        if (!other.CompareTag("Activator")) return;
-        Debug.Log(_lifetime);
-        canBePressed = false;
-        GameManager.Instance.NoteMissed();
-        SpawnEffect(missEffect);
-        
+        Judge(_lifetimeMs + (float)_durationMs);
         if (noteType == NoteType.Long && isBeingHeld)
         {
             Destroy(lineCollider.gameObject);
             Destroy(headCollider.gameObject);
             Destroy(tailCollider.gameObject);
         }
-        
         Destroy(gameObject);
+    }
+
+    void SpawnEffect(GameObject effectPrefab)
+    {
+        if (effectPrefab)
+        {
+            Instantiate(
+                effectPrefab,
+                new Vector3(
+                    // Add random offset for better visibility
+                    transform.position.x + Random.Range(-0.4f, 0.4f),
+                    1f + Random.Range(0.2f, 0.2f),
+                    transform.position.z),
+                effectPrefab.transform.rotation);
+        }
+    }
+
+    void Judge(float hitTimeMs)
+    {
+        switch (Mathf.Abs(hitTimeMs))
+        {
+            case > WindowGoodMs:
+                // Debug.Log("Good!");
+                GameManager.Instance.GoodHit();
+                SpawnEffect(goodEffect);
+                break;
+
+            case > WindowNormalMs:
+                // Debug.Log("Hit!");
+                GameManager.Instance.NormalHit();
+                SpawnEffect(hitEffect);
+                break;
+
+            default:
+                // Debug.Log("Perfect!");
+                GameManager.Instance.PerfectHit();
+                SpawnEffect(perfectEffect);
+                break;
+        }
     }
 }
