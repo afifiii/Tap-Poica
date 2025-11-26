@@ -4,7 +4,7 @@ public class NoteObject : MonoBehaviour
 {
     [Header("Note Settings")] public NoteType noteType;
     public KeyCode keyToPress;
-    public LineRenderer line;
+    public SpriteRenderer line;
     public BoxCollider2D lineCollider;
     public CircleCollider2D tailCollider, headCollider;
 
@@ -27,31 +27,22 @@ public class NoteObject : MonoBehaviour
 
         if (noteType != NoteType.Long) return;
 
-        var height = speed * (float)_duration / 1000f;
-        var pointPositions = line.GetPosition(1);
-        var visualHeight = pointPositions.y * height;
-        lineCollider.offset = Vector2.up * visualHeight / 2;
-        lineCollider.size = new Vector2(lineCollider.size.x, visualHeight);
-        line.SetPosition(0, transform.localPosition);
-        line.SetPosition(1, Vector3.up * visualHeight);
-
-        if (!tailCollider) return;
-        tailCollider.transform.Translate(Vector3.up * visualHeight);
+        var visualHeight = speed * (float)_duration / 1000f;
+        transform.Translate(Vector3.up * visualHeight);
+        line.transform.localScale = Vector3.one * visualHeight;
+        tailCollider.transform.localPosition = Vector3.up * visualHeight / 2f;
+        headCollider.transform.localPosition = Vector3.down * visualHeight / 2f;
     }
 
     void FixedUpdate()
     {
         _lifetime += Time.fixedDeltaTime;
-        var distance = _speed * Time.fixedDeltaTime * Vector3.down;
-        transform.Translate(distance);
+        transform.Translate(_speed * Time.fixedDeltaTime * Vector3.down);
         // Optional manual key press //to change
         if (!Input.GetKeyDown(keyToPress) || !canBePressed) return;
         Pressed();
 
         if (noteType != NoteType.Long) return;
-
-        line.SetPosition(0, transform.localPosition);
-        line.SetPosition(1, distance);
 
         if (Input.GetKey(keyToPress) && canBePressed && !isBeingHeld)
         {
