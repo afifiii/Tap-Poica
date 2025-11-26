@@ -150,31 +150,39 @@ public class GameManager : MonoBehaviour
     // --- Hit & Hold Notes Programmatically ---
     public void HitNote()
     {
-        var notes = FindObjectsByType<NoteObject>(FindObjectsSortMode.None);
-        NoteObject closest = null;
-        var bestDist = Mathf.Infinity;
-
-        foreach (var n in notes)
+        NoteObject latest = null;
+        foreach (var n in FindObjectsByType<NoteObject>(FindObjectsSortMode.None))
         {
-            var d = Mathf.Abs(n.transform.position.y);
             if (!n.CanBePressed() || n.noteType != NoteType.Short) continue;
-            if (d >= bestDist) continue;
-            bestDist = d;
-            closest = n;
+            if (latest == null || n._lifetimeMs < latest._lifetimeMs)
+            {
+                latest = n;
+            }
         }
 
-        if (!closest) return;
-        closest.Pressed();
+        if (!latest) return;
+        latest.Pressed();
     }
 
     public void HoldStart()
     {
         _isHolding = true;
+
+        NoteObject latest = null;
         foreach (var n in FindObjectsByType<NoteObject>(FindObjectsSortMode.None))
         {
+            // Start the latest hold note that can be pressed
             if (!n.CanBePressed() || n.noteType != NoteType.Long) continue;
-            n.HoldStart();
-            return;
+            if (latest == null || n._lifetimeMs < latest._lifetimeMs)
+            {
+                latest = n;
+            }
+        }
+
+        if (!latest) return;
+        if (!latest.isBeingHeld)
+        {
+            latest.HoldStart();
         }
     }
 
@@ -183,9 +191,9 @@ public class GameManager : MonoBehaviour
         _isHolding = false;
         foreach (var n in FindObjectsByType<NoteObject>(FindObjectsSortMode.None))
         {
+            // End all held notes
             if (!n.isBeingHeld || n.noteType != NoteType.Long) continue;
             n.HoldEnd();
-            return;
         }
     }
 

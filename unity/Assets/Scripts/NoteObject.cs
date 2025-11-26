@@ -18,7 +18,7 @@ public class NoteObject : MonoBehaviour
     [HideInInspector] public bool isBeingHeld = false;
     float _speed;
     double _durationMs;
-    float _lifetimeMs;
+    public float _lifetimeMs { get; private set; }
 
     public void Initialize(NoteData data, float speed, float lifetimeMs)
     {
@@ -59,7 +59,8 @@ public class NoteObject : MonoBehaviour
             return;
         }
 
-        TryToPress();
+        // Should be called in GameManager instead
+        // TryToPress();
     }
 
     public bool CanBePressed()
@@ -67,6 +68,7 @@ public class NoteObject : MonoBehaviour
         return _lifetimeMs <= WindowMissMs;
     }
 
+    // Deprecated.
     public bool TryToPress()
     {
         // Cannot be pressed yet
