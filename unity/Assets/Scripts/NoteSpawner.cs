@@ -18,13 +18,13 @@ public class NoteData
     public double durationMs; // in ms (0 for short notes)
 }
 
-public class NoteSpawner :MonoBehaviour
+public class NoteSpawner : MonoBehaviour
 {
     public GameObject shortNotePrefab;
     public GameObject longNotePrefab;
 
-    public float noteSpeed = 1f; // Moves 7.5 units per second
-    public float leadTimeMs = 2000f; // how early to spawn before it reaches button
+    public float noteStart;
+    public float leadTimeMs; // how early to spawn before it reaches button
     List<NoteData> _notes;
     AudioSource _audioSource;
 
@@ -38,7 +38,7 @@ public class NoteSpawner :MonoBehaviour
         _bpm = osuBeatmap.globalBpm;
         _audioSource = source;
         _notes = NoteConverter.Convert(osuBeatmap);
-        if(!osuBeatmap.audioClip) return;
+        if (!osuBeatmap.audioClip) return;
         _audioSource.clip = osuBeatmap.audioClip;
 
         foreach (var noteData in _notes.Where(noteData => leadTimeMs > noteData.timeMs))
@@ -50,8 +50,8 @@ public class NoteSpawner :MonoBehaviour
 
     void Update()
     {
-        if(_notes == null || _bpm == 0) return;
-        if(_nextIndex >= _notes.Count) return;
+        if (_notes == null || _bpm == 0) return;
+        if (_nextIndex >= _notes.Count) return;
 
         var musicTimeMs = _audioSource.time * 1000;
 
@@ -65,7 +65,7 @@ public class NoteSpawner :MonoBehaviour
     {
         var prefabToSpawn = data.type == NoteType.Long ? longNotePrefab : shortNotePrefab;
 
-        if(!prefabToSpawn)
+        if (!prefabToSpawn)
         {
             Debug.LogError("Prefab to spawn is not assigned!");
             return;
@@ -74,15 +74,14 @@ public class NoteSpawner :MonoBehaviour
         var gameObj = Instantiate(prefabToSpawn, transform.position, Quaternion.identity, transform);
         var noteObject = gameObj.GetComponent<NoteObject>();
 
-        if(!noteObject)
+        if (!noteObject)
         {
             Debug.LogError("Spawned object does not have a NoteObject component!");
             return;
         }
 
         var musicTimeMs = _audioSource.time * 1000;
-
-        noteObject.Initialize(data, noteSpeed, 1);
+        noteObject.Initialize(data, noteStart / leadTimeMs * 1000f);
 
         _nextIndex++;
     }

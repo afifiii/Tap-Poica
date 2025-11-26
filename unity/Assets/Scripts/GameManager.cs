@@ -1,22 +1,22 @@
-﻿using System.Globalization;
+using System.Globalization;
 using OsuParser;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class GameManager :MonoBehaviour
+public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
     [Header("Level Settings")]
     public Level level = Level.IrisOut;
     public int difficulty = 1;
-    
+
     [Header("Note Settings")]
     public GameObject shortNotePrefab;
     public GameObject longNotePrefab;
-    public float noteSpeed = 0.1f;
+    public float noteStart = 9f;
     public float leadTimeMs = 2000f; // how early to spawn before it reaches button
 
     [Header("Score Settings")] public int currentScore;
@@ -42,7 +42,7 @@ public class GameManager :MonoBehaviour
 
     [Header("Next Level Button")] public Button nextLevelButton;
 
-    // [Header("Stats Tracking")] 
+    // [Header("Stats Tracking")]
     float _totalNotes;
     float _normalHits;
     float _goodHits;
@@ -75,13 +75,13 @@ public class GameManager :MonoBehaviour
 
     void Update()
     {
-        if(!_levelLoaded) return;
+        if (!_levelLoaded) return;
 
-        if(_startingPoint || Input.anyKeyDown) return;
+        if (_startingPoint || Input.anyKeyDown) return;
         _startingPoint = true;
         // beatScroller.hasStarted = true;
 
-        if(_resultsShown || _music.isPlaying) return;
+        if (_resultsShown || _music.isPlaying) return;
         ShowResults();
         _resultsShown = true;
     }
@@ -92,11 +92,11 @@ public class GameManager :MonoBehaviour
         _music.clip = osuBeatmap.audioClip;
         _music.Play();
         _music.loop = false;
-        _noteSpawner.transform.position = Vector3.up * 9f;
+        _noteSpawner.transform.position = Vector3.up * noteStart;
         _noteSpawner.longNotePrefab = longNotePrefab;
         _noteSpawner.shortNotePrefab = shortNotePrefab;
+        _noteSpawner.noteStart = noteStart;
         _noteSpawner.leadTimeMs = leadTimeMs;
-        _noteSpawner.noteSpeed = noteSpeed;
         _noteSpawner.Initialize(osuBeatmap, _music);
     }
 
@@ -129,7 +129,7 @@ public class GameManager :MonoBehaviour
         // nextLevelButton.gameObject.SetActive(true);
     }
 
-// --- Hit & Hold Notes Programmatically ---
+    // --- Hit & Hold Notes Programmatically ---
     public void HitNote()
     {
         var notes = FindObjectsByType<NoteObject>(FindObjectsSortMode.None);
@@ -139,12 +139,12 @@ public class GameManager :MonoBehaviour
         foreach (var n in notes)
         {
             var d = Mathf.Abs(n.transform.position.y);
-            if(!n.canBePressed && d >= bestDist) continue;
+            if (!n.canBePressed && d >= bestDist) continue;
             bestDist = d;
             closest = n;
         }
 
-        if(!closest) return;
+        if (!closest) return;
         closest.Pressed();
     }
 
@@ -152,7 +152,7 @@ public class GameManager :MonoBehaviour
     {
         foreach (var n in FindObjectsByType<NoteObject>(FindObjectsSortMode.None))
         {
-            if(!n.canBePressed || n.noteType != NoteType.Long) continue;
+            if (!n.canBePressed || n.noteType != NoteType.Long) continue;
             n.HoldStart();
             return;
         }
@@ -162,20 +162,20 @@ public class GameManager :MonoBehaviour
     {
         foreach (var n in FindObjectsByType<NoteObject>(FindObjectsSortMode.None))
         {
-            if(!n.isBeingHeld) continue;
+            if (!n.isBeingHeld) continue;
             n.HoldEnd();
             return;
         }
     }
 
-// --- Scoring System ---
+    // --- Scoring System ---
     public void NoteHit()
     {
-        if(currentMultiplier - 1 < multiplierThresholds.Length)
+        if (currentMultiplier - 1 < multiplierThresholds.Length)
         {
             multiplierTracker++;
 
-            if(multiplierThresholds[currentMultiplier - 1] <= multiplierTracker)
+            if (multiplierThresholds[currentMultiplier - 1] <= multiplierTracker)
             {
                 multiplierTracker = 0;
                 currentMultiplier++;
@@ -215,32 +215,32 @@ public class GameManager :MonoBehaviour
         _missedHits++;
     }
 
-// // ----------------------------------------------------------
-// // NEXT LEVEL BUTTON → Load next scene
-// // ----------------------------------------------------------
-//     public void LoadNextLevel()
-//     {
-//         Time.timeScale = 1f;
-//
-//         var currentIndex = SceneManager.GetActiveScene().buildIndex;
-//         var nextIndex = currentIndex + 1;
-//
-//         if(nextIndex < SceneManager.sceneCountInBuildSettings)
-//         {
-//             SceneManager.LoadScene(nextIndex);
-//         }
-//         else
-//         {
-//             Debug.Log("Reached the last level!");
-//         }
-//     }
-//
-// // ----------------------------------------------------------
-// // EXIT LAST LEVEL → Load specific scene (e.g. Main Menu)
-// // ----------------------------------------------------------
-//     public void ExitToScene(string sceneName)
-//     {
-//         Time.timeScale = 1f;
-//         SceneManager.LoadScene(sceneName);
-//     }
+    // // ----------------------------------------------------------
+    // // NEXT LEVEL BUTTON → Load next scene
+    // // ----------------------------------------------------------
+    //     public void LoadNextLevel()
+    //     {
+    //         Time.timeScale = 1f;
+    //
+    //         var currentIndex = SceneManager.GetActiveScene().buildIndex;
+    //         var nextIndex = currentIndex + 1;
+    //
+    //         if(nextIndex < SceneManager.sceneCountInBuildSettings)
+    //         {
+    //             SceneManager.LoadScene(nextIndex);
+    //         }
+    //         else
+    //         {
+    //             Debug.Log("Reached the last level!");
+    //         }
+    //     }
+    //
+    // // ----------------------------------------------------------
+    // // EXIT LAST LEVEL → Load specific scene (e.g. Main Menu)
+    // // ----------------------------------------------------------
+    //     public void ExitToScene(string sceneName)
+    //     {
+    //         Time.timeScale = 1f;
+    //         SceneManager.LoadScene(sceneName);
+    //     }
 }
