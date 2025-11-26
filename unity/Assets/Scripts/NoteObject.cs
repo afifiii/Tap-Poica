@@ -141,5 +141,14 @@ public class NoteObject : MonoBehaviour
         canBePressed = false;
         GameManager.Instance.NoteMissed();
         SpawnEffect(missEffect);
+        
+        if (noteType == NoteType.Long && isBeingHeld)
+        {
+            Destroy(lineCollider.gameObject);
+            Destroy(headCollider.gameObject);
+            Destroy(tailCollider.gameObject);
+        }
+        
+        Destroy(gameObject);
     }
 }
