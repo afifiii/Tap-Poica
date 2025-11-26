@@ -5,36 +5,29 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class Demo : MonoBehaviour
 {
-    public bool isScanningDevices = false;
-    public bool isScanningServices = false;
-    public bool isScanningCharacteristics = false;
-    public bool isSubscribed = false;
     public Text deviceScanButtonText;
     public Text deviceScanStatusText;
-    public GameObject deviceScanResultProto;
     public Text errorText;
     public Text TextSubscribe;
 
-    Transform scanResultRoot;
-    public readonly string deviceName = "TapPioca";
     public string deviceId;
+    public readonly string deviceName = "TapPioca";
     public readonly string serviceId = "67676767-6702-6767-6767-676767676767";
     public readonly string characteristicId = "TODO";
 
-
-    Dictionary<string, Dictionary<string, string>> devices = new Dictionary<string, Dictionary<string, string>>();
-    Dictionary<string, string> characteristicNames = new Dictionary<string, string>();
+    bool isScanningDevices = false;
+    bool isScanningServices = false;
+    bool isScanningCharacteristics = false;
+    bool isSubscribed = false;
     string lastError;
 
     // Start is called before the first frame update
     void Start()
-    {
-        scanResultRoot = deviceScanResultProto.transform.parent;
-        deviceScanResultProto.transform.SetParent(null);
-    }
+    { }
 
     // Update is called once per frame
     void Update()
@@ -67,8 +60,7 @@ public class Demo : MonoBehaviour
             BleApi.GetError(out res);
             if (lastError != res.msg)
             {
-                Debug.LogError(res.msg);
-                errorText.text = res.msg;
+                Debug.LogError("BleApi error: " + res.msg);
                 lastError = res.msg;
             }
         }
@@ -84,11 +76,6 @@ public class Demo : MonoBehaviour
         if (!isScanningDevices)
         {
             // start new scan
-            devices.Clear();
-            for (int i = scanResultRoot.childCount - 1; i >= 0; i--)
-            {
-                Destroy(scanResultRoot.GetChild(i).gameObject);
-            }
             BleApi.StartDeviceScan();
             isScanningDevices = true;
             deviceScanButtonText.text = "Stop scan";
@@ -122,27 +109,8 @@ public class Demo : MonoBehaviour
                 break;
             }
 
-            if (devices.ContainsKey(res.id))
-            {
-                continue;
-            }
-            if (!devices.ContainsKey(res.id))
-            {
-                devices[res.id] = new Dictionary<string, string>() {
-                    { "name", "" },
-                    { "isConnectable", "False" }
-                };
-            }
-            if (res.nameUpdated)
-            {
-                devices[res.id]["name"] = res.name;
-            }
-            if (res.isConnectableUpdated)
-            {
-                devices[res.id]["isConnectable"] = res.isConnectable.ToString();
-            }
             // Consider only devices which have the right name and which are connectable
-            if (devices[res.id]["name"] == deviceName && devices[res.id]["isConnectable"] == "True")
+            if (res.name == deviceName && res.isConnectable.ToString() == "True")
             {
                 // This is our device
                 deviceId = res.id;
@@ -217,10 +185,11 @@ public class Demo : MonoBehaviour
 
             if (res.uuid == characteristicId)
             {
-                // Found our characteristic
+                // Found our characteristic, we are done
                 isScanningCharacteristics = false;
                 Subscribe();
                 deviceScanStatusText.text = "connected";
+                SceneManager.LoadScene("StartScene(1)");
                 break;
             }
         }
@@ -233,9 +202,10 @@ public class Demo : MonoBehaviour
         isSubscribed = true;
     }
 
-    public void Write()
+    // Message must be ASCII and less than 512 bytes
+    public void Write(string message)
     {
-        byte[] payload = Encoding.ASCII.GetBytes("stuff to write");
+        byte[] payload = Encoding.ASCII.GetBytes(message);
         BleApi.BLEData data = new BleApi.BLEData();
         data.buf = new byte[512];
         data.size = (short)payload.Length;
