@@ -22,10 +22,10 @@ extern char sprintbuff[100];
 
 #define BLE_DEVICE_NAME "TapPioca"
 
-#define TAP_THRESH 5600.0
+#define TAP_THRESH 7000.0
 #define TAP_DEBOUNCE 60000  // microseconds
-#define SHAKE_THRESH 510.0
-#define SHAKE_DEBOUNCE 130000  // microseconds
+#define SHAKE_THRESH 550.0
+#define SHAKE_DEBOUNCE 110000  // microseconds
 
 #define VIBRATE_PIN 6
 #define VIBRATE_PIN_ACTIVE HIGH
@@ -49,7 +49,7 @@ uint8_t ble_can_sleep = false;
 uint8_t ble_connection_state = false;
 uint8_t ble_connection_displayed_state = true;
 
-TinyScreen display = TinyScreen(TinyScreenDefault);
+TinyScreen display = TinyScreen(2);
 RTCZero RTCZ;
 SampleBuffer samples;
 BMA250 accel_sensor;

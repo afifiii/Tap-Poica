@@ -6,46 +6,47 @@ using OsuParser;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class LevelLoader : MonoBehaviour
+public class LevelLoader :MonoBehaviour
 {
     public void Load(Level level, LevelDifficulty difficultyIndex, Action<OsuBeatmap> onLoaded)
     {
         Debug.Log($"LevelLoader: Requested load for {level} at difficulty {difficultyIndex}");
         var levelMetadata = LevelData.LevelRegistry[(int)level];
 
-        if (levelMetadata == null)
+        if(levelMetadata == null)
         {
             Debug.LogError($"LevelLoader: Could not find level named '{level}'");
             return;
         }
 
-        if (difficultyIndex < 0 || difficultyIndex >= (LevelDifficulty)levelMetadata.difficulties)
+        if(difficultyIndex < 0 || difficultyIndex >= (LevelDifficulty)levelMetadata.difficulties)
         {
             Debug.LogError($"LevelLoader: Difficulty index {difficultyIndex} is out of range for {level}");
             return;
         }
 
-        StartCoroutine(LoadRoutine(levelMetadata.folderName, difficultyIndex, onLoaded));
+        StartCoroutine(LoadRoutine(level, difficultyIndex, onLoaded));
     }
 
     // --- 3. The Internal Logic ---
 
-    IEnumerator LoadRoutine(string folderName, LevelDifficulty difficultyIndex, Action<OsuBeatmap> callback)
+    IEnumerator LoadRoutine(Level level, LevelDifficulty difficulty, Action<OsuBeatmap> callback)
     {
+        var metadata = LevelData.LevelRegistry[(int)level];
         // Construct path: StreamingAssets/irisout/1.osu
-        var mapPath = Path.Combine(Application.streamingAssetsPath, folderName, (int)difficultyIndex + ".osu");
+        var mapPath = Path.Combine(Application.streamingAssetsPath, metadata.folderName, (int)difficulty + ".osu");
 
         OsuBeatmap loadedOsuBeatmap;
 
-        if (!mapPath.Contains("://"))
+        if(!mapPath.Contains("://"))
             mapPath = "file://" + mapPath;
 
         using (var www = UnityWebRequest.Get(mapPath))
         {
             yield return www.SendWebRequest();
 
-            if (www.result != UnityWebRequest.Result.Success)
-                Debug.LogError($"LevelLoader Error: {www.error}");
+            if(www.result != UnityWebRequest.Result.Success)
+                Debug.LogError($"LevelLoader Error: {www.error} at path {mapPath}");
 
             Debug.Log("LevelLoader: File read. Parsing...");
 
@@ -53,20 +54,31 @@ public class LevelLoader : MonoBehaviour
             loadedOsuBeatmap = FileParser.Parse(www.downloadHandler.text);
         }
 
-        // Construct path: StreamingAssets/irisout/audio.mp3
-        var audioPath = Path.Combine(Application.streamingAssetsPath, folderName, "audio.mp3");
-
-        using (var wwwAudio = UnityWebRequestMultimedia.GetAudioClip(audioPath, AudioType.MPEG))
+        StartCoroutine(LoadAudioClip(level, audioClip =>
         {
-            yield return wwwAudio.SendWebRequest();
+            loadedOsuBeatmap.audioClip = audioClip;
+            callback?.Invoke(loadedOsuBeatmap);
+        }));
+    }
 
-            loadedOsuBeatmap.audioClip = wwwAudio.result == UnityWebRequest.Result.Success
-                ? DownloadHandlerAudioClip.GetContent(wwwAudio)
-                : null;
-            // Send the data back to whoever asked for it
-        }
+    public static IEnumerator LoadAudioClip(Level level, Action<AudioClip> callback)
+    {
+        var metadata = LevelData.LevelRegistry[(int)level];
 
-        callback?.Invoke(loadedOsuBeatmap);
+        var audioPath = Path.Combine(Application.streamingAssetsPath, metadata.folderName,
+            $"audio.{metadata.fileExtension}");
+
+        using var wwwAudio = UnityWebRequestMultimedia.GetAudioClip(
+            "file://" + audioPath, metadata.audioType);
+
+        yield return wwwAudio.SendWebRequest();
+
+        if(wwwAudio.result != UnityWebRequest.Result.Success)
+            Debug.LogError($"LevelLoader Audio Error: {wwwAudio.error} at path {audioPath}");
+
+        callback?.Invoke(wwwAudio.result == UnityWebRequest.Result.Success
+            ? DownloadHandlerAudioClip.GetContent(wwwAudio)
+            : null);
     }
 
     // Simple data class for your registry

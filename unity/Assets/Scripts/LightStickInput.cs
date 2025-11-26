@@ -8,40 +8,38 @@ public class LightstickInput
     int _packetDelay;
 
     [Flags]
-    public enum LightStickData
+    enum LightStickData
     {
         Tap = 1 << 0,
         ShakeStart = 1 << 1,
         ShakeEnd = 1 << 2
     }
 
-    public void Update()
+    public void UpdateFromPacket(LightStickPacket data)
     {
-        if (_lightStickData.HasFlag(LightStickData.Tap))
+        _lightStickData = (LightStickData)data.data;
+
+        if(_lightStickData.HasFlag(LightStickData.Tap))
         {
             Debug.Log("TAP");
             button.OnTapFromController();
             _lightStickData &= ~LightStickData.Tap; // Clear the flag after processing
         }
 
-        if (_lightStickData.HasFlag(LightStickData.ShakeStart))
+        if(_lightStickData.HasFlag(LightStickData.ShakeStart))
         {
             Debug.Log("HOLD START");
             button.OnHoldStartFromController();
             _lightStickData &= ~LightStickData.ShakeStart; // Clear the flag after processing
         }
 
-        if (_lightStickData.HasFlag(LightStickData.ShakeEnd))
+        if(_lightStickData.HasFlag(LightStickData.ShakeEnd))
         {
             Debug.Log("HOLD END");
             button.OnHoldEndFromController();
             _lightStickData &= ~LightStickData.ShakeEnd; // Clear the flag after processing
         }
-    }
 
-    public void UpdateFromPacket(LightStickPacket data)
-    {
-        _lightStickData = (LightStickData)data.data;
         _packetDelay = data.delay;
     }
 }

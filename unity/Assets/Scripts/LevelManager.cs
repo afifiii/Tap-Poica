@@ -3,32 +3,84 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
-public class LevelManager : MonoBehaviour
+public class LevelManager :MonoBehaviour
 {
     public static LevelManager Instance;
     public TMP_Dropdown levelDropdown;
     public TMP_Dropdown difficultyDropdown;
-    public LevelData levelData;
+    public Button startButton;
+
+    public Level level;
+    public LevelDifficulty difficulty;
+    AudioSource _lobbyMusic;
+    // public LevelData levelData;
+
+    void Awake()
+    {
+        if(!Instance)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+            return;
+        }
+
+        Destroy(gameObject);
+    }
 
     void Start()
     {
+        _lobbyMusic = gameObject.AddComponent<AudioSource>();
         levelDropdown.ClearOptions();
-        var levelNames = LevelData.LevelRegistry.Select(levelMeta => levelMeta.displayName).ToList();
+        var levelNames = LevelData.LevelRegistry
+            .Select(meta => $"{meta.displayName} - {meta.artist}").ToList();
         levelDropdown.AddOptions(levelNames);
-        levelDropdown.onValueChanged.AddListener(_ => levelData.level = (Level)levelDropdown.value);
+        levelDropdown.onValueChanged.AddListener(_ =>
+        {
+            level = (Level)levelDropdown.value;
+            InitDifficultyOptions();
+            _lobbyMusic.Stop();
+            StartCoroutine(LevelLoader.LoadAudioClip(level, clip =>
+            {
+                _lobbyMusic.clip = clip;
+                _lobbyMusic.loop = true;
+                _lobbyMusic.Play();
+            }));
+        });
+        level = (Level)levelDropdown.value;
+        StartCoroutine(LevelLoader.LoadAudioClip(level, clip =>
+        {
+            Debug.Log("Playing lobby music");
+            _lobbyMusic.clip = clip;
+            _lobbyMusic.loop = true;
+            _lobbyMusic.Play();
+        }));
 
+        InitDifficultyOptions();
+        difficultyDropdown.onValueChanged.AddListener(_ => difficulty = (LevelDifficulty)difficultyDropdown.value);
+
+        startButton.interactable = BleConnection.Instance.controllerConnected;
+    }
+
+    void InitDifficultyOptions()
+    {
         difficultyDropdown.ClearOptions();
-        var difficultyNames = Enum.GetNames(typeof(LevelDifficulty)).ToList();
+        var difficultyNames = Enum.GetNames(typeof(LevelDifficulty))
+            .Take(LevelData.LevelRegistry[(int)level].difficulties).ToList();
         difficultyDropdown.AddOptions(difficultyNames);
-        levelDropdown.onValueChanged.AddListener(_ => levelData.difficulty = (LevelDifficulty)difficultyDropdown.value);
+        difficulty = (LevelDifficulty)difficultyDropdown.value;
+    }
 
-        levelData.level = (Level)levelDropdown.value;
-        levelData.difficulty = (LevelDifficulty)difficultyDropdown.value;
+    void Update()
+    {
+        startButton.interactable = BleConnection.Instance.controllerConnected;
     }
 
     public void StartLevel()
     {
+        if(!BleConnection.Instance.controllerConnected) return;
+        _lobbyMusic.Stop();
         SceneManager.LoadScene("MainScene");
         // SceneManager.SetActiveScene(SceneManager.GetSceneByName("MainScene"));
     }
