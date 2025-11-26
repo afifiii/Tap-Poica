@@ -43,6 +43,8 @@ public class GameManager : MonoBehaviour
 
     [Header("Next Level Button")] public Button nextLevelButton;
 
+    public GameObject inputButton;
+
     // [Header("Stats Tracking")]
     float _totalNotes;
     float _normalHits;
@@ -94,6 +96,7 @@ public class GameManager : MonoBehaviour
         _levelLoader = gameObject.AddComponent<LevelLoader>();
         _noteSpawner = gameObject.AddComponent<NoteSpawner>();
         _music = gameObject.AddComponent<AudioSource>();
+        _lightstickInput.button = inputButton.GetComponent<ButtonController>();
 
         scoreTxt.text = "Score: 0";
         currentMultiplier = 1;
