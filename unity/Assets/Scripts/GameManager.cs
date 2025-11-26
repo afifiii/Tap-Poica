@@ -92,7 +92,7 @@ public class GameManager :MonoBehaviour
         _music.clip = osuBeatmap.audioClip;
         _music.Play();
         _music.loop = false;
-        _noteSpawner.transform.Translate(Vector3.up * 9f);
+        _noteSpawner.transform.position = Vector3.up * 9f;
         _noteSpawner.longNotePrefab = longNotePrefab;
         _noteSpawner.shortNotePrefab = shortNotePrefab;
         _noteSpawner.leadTimeMs = leadTimeMs;

@@ -18,8 +18,9 @@ public class NoteObject :MonoBehaviour
     [HideInInspector] public bool canBePressed;
     float _speed;
     double _duration;
+    float _lifetime;
 
-    public void Initialize(NoteData data, float speed)
+    public void Initialize(NoteData data, float speed, float leadDistance)
     {
         _duration = data.durationMs;
         _speed = speed;
@@ -30,6 +31,8 @@ public class NoteObject :MonoBehaviour
         var pointPositions = line.GetPosition(1);
         var visualHeight = pointPositions.y * height;
         lineCollider.offset = Vector2.up * visualHeight / 2;
+        lineCollider.size = new Vector2(lineCollider.size.x, visualHeight);
+        line.SetPosition(0, transform.localPosition);
         line.SetPosition(1, Vector3.up * visualHeight);
 
         if(!tailCollider) return;
@@ -38,12 +41,17 @@ public class NoteObject :MonoBehaviour
 
     void Update()
     {
-        transform.Translate(_speed * Time.deltaTime * Vector3.down);
+        _lifetime += Time.deltaTime;
+        var distance = _speed * Time.deltaTime * Vector3.down;
+        transform.Translate(distance);
         // Optional manual key press //to change
         if(!Input.GetKeyDown(keyToPress) || !canBePressed) return;
         Pressed();
 
         if(noteType != NoteType.Long) return;
+        
+        line.SetPosition(0, transform.localPosition);
+        line.SetPosition(1, distance);
 
         if(Input.GetKey(keyToPress) && canBePressed && !isBeingHeld)
         {
@@ -73,6 +81,10 @@ public class NoteObject :MonoBehaviour
     {
         if(noteType != NoteType.Long) return;
         isBeingHeld = true;
+        
+        var yDist = Mathf.Abs(transform.position.y);
+        
+        Judge(yDist);
         // canBePressed = false;
     }
 
@@ -134,9 +146,9 @@ public class NoteObject :MonoBehaviour
     void OnTriggerExit2D(Collider2D other)
     {
         if(!other.CompareTag("Activator")) return;
+        Debug.Log(_lifetime);
         canBePressed = false;
         GameManager.Instance.NoteMissed();
         SpawnEffect(missEffect);
-        if(missEffect) Instantiate(missEffect, transform.position, missEffect.transform.rotation);
     }
 }

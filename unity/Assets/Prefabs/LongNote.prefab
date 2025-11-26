@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1052332114865475600}
   - component: {fileID: 8064222733879902202}
-  - component: {fileID: 1041837825747484280}
+  - component: {fileID: 7176841057703718412}
   m_Layer: 0
   m_Name: Line
   m_TagString: Untagged
@@ -140,7 +140,7 @@ LineRenderer:
   m_UseWorldSpace: 1
   m_Loop: 0
   m_ApplyActiveColorSpace: 1
---- !u!61 &1041837825747484280
+--- !u!61 &7176841057703718412
 BoxCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -184,7 +184,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 0.25, y: 1.25}
   m_EdgeRadius: 0
 --- !u!1 &3863107977034673251
 GameObject:
@@ -196,7 +196,6 @@ GameObject:
   m_Component:
   - component: {fileID: 193075709293800495}
   - component: {fileID: 8852493644743903517}
-  - component: {fileID: 2218780885120418833}
   - component: {fileID: 2101932656532006088}
   m_Layer: 0
   m_Name: Head Circle
@@ -275,33 +274,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!50 &2218780885120418833
-Rigidbody2D:
-  serializedVersion: 5
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3863107977034673251}
-  m_BodyType: 0
-  m_Simulated: 1
-  m_UseFullKinematicContacts: 0
-  m_UseAutoMass: 0
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_GravityScale: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_Interpolate: 0
-  m_SleepingMode: 1
-  m_CollisionDetection: 0
-  m_Constraints: 0
 --- !u!58 &2101932656532006088
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -348,7 +320,6 @@ GameObject:
   m_Component:
   - component: {fileID: 6224323543737354902}
   - component: {fileID: 5152675343561834744}
-  - component: {fileID: 2648937234331785935}
   m_Layer: 0
   m_Name: LongNote
   m_TagString: Long Bar
@@ -389,7 +360,7 @@ MonoBehaviour:
   noteType: 1
   keyToPress: 32
   line: {fileID: 8064222733879902202}
-  lineCollider: {fileID: 1041837825747484280}
+  lineCollider: {fileID: 7176841057703718412}
   tailCollider: {fileID: 2683000825264742656}
   headCollider: {fileID: 2101932656532006088}
   hitEffect: {fileID: 3576110572665736605, guid: 5b66b9d3ae10c994c834b5cfac82801c, type: 3}
@@ -398,33 +369,6 @@ MonoBehaviour:
   missEffect: {fileID: 5902500978105746458, guid: 2a68f4f33e67c2e49b88a3ffc50bba81, type: 3}
   isBeingHeld: 0
   canBePressed: 0
---- !u!50 &2648937234331785935
-Rigidbody2D:
-  serializedVersion: 5
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5732230104749981023}
-  m_BodyType: 0
-  m_Simulated: 1
-  m_UseFullKinematicContacts: 0
-  m_UseAutoMass: 0
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_GravityScale: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_Interpolate: 0
-  m_SleepingMode: 1
-  m_CollisionDetection: 0
-  m_Constraints: 0
 --- !u!1 &5915320855899863363
 GameObject:
   m_ObjectHideFlags: 0
@@ -435,7 +379,6 @@ GameObject:
   m_Component:
   - component: {fileID: 7326725687504484984}
   - component: {fileID: 6563464773767881391}
-  - component: {fileID: 592858056266789514}
   - component: {fileID: 2683000825264742656}
   m_Layer: 0
   m_Name: Tail Circle
@@ -514,33 +457,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!50 &592858056266789514
-Rigidbody2D:
-  serializedVersion: 5
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5915320855899863363}
-  m_BodyType: 0
-  m_Simulated: 1
-  m_UseFullKinematicContacts: 0
-  m_UseAutoMass: 0
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_GravityScale: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_Interpolate: 0
-  m_SleepingMode: 1
-  m_CollisionDetection: 0
-  m_Constraints: 0
 --- !u!58 &2683000825264742656
 CircleCollider2D:
   m_ObjectHideFlags: 0

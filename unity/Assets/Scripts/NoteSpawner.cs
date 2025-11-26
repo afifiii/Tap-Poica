@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using OsuParser;
 using UnityEngine;
 
@@ -22,7 +23,7 @@ public class NoteSpawner :MonoBehaviour
     public GameObject shortNotePrefab;
     public GameObject longNotePrefab;
 
-    public float noteSpeed = 1f;
+    public float noteSpeed = 1f; // Moves 7.5 units per second
     public float leadTimeMs = 2000f; // how early to spawn before it reaches button
     List<NoteData> _notes;
     AudioSource _audioSource;
@@ -39,20 +40,29 @@ public class NoteSpawner :MonoBehaviour
         _notes = NoteConverter.Convert(osuBeatmap);
         if(!osuBeatmap.audioClip) return;
         _audioSource.clip = osuBeatmap.audioClip;
+
+        foreach (var noteData in _notes.Where(noteData => leadTimeMs > noteData.timeMs))
+        {
+            SpawnNote(noteData);
+            _nextIndex++;
+        }
     }
 
     void Update()
     {
-        // Debug.Log($"{_notes} notes. BPM: {_bpm}");
         if(_notes == null || _bpm == 0) return;
         if(_nextIndex >= _notes.Count) return;
 
         var musicTimeMs = _audioSource.time * 1000;
 
-        // Debug.Log($"Music Time: {musicTimeMs} ms, Lead Time: {leadTimeMs}, Next Note Time: {_notes[_nextIndex].timeMs} ms");
-        var data = _notes[_nextIndex];
-        if(musicTimeMs + leadTimeMs <= data.timeMs) return;
+        while (_nextIndex < _notes.Count && leadTimeMs >= _notes[_nextIndex].timeMs - musicTimeMs)
+        {
+            SpawnNote(_notes[_nextIndex]);
+        }
+    }
 
+    void SpawnNote(NoteData data)
+    {
         var prefabToSpawn = data.type == NoteType.Long ? longNotePrefab : shortNotePrefab;
 
         if(!prefabToSpawn)
@@ -60,14 +70,19 @@ public class NoteSpawner :MonoBehaviour
             Debug.LogError("Prefab to spawn is not assigned!");
             return;
         }
+
         var gameObj = Instantiate(prefabToSpawn, transform.position, Quaternion.identity, transform);
         var noteObject = gameObj.GetComponent<NoteObject>();
-        if (!noteObject)
+
+        if(!noteObject)
         {
             Debug.LogError("Spawned object does not have a NoteObject component!");
             return;
         }
-        noteObject.Initialize(data, noteSpeed * (float)_bpm / 60f);
+
+        var musicTimeMs = _audioSource.time * 1000;
+
+        noteObject.Initialize(data, noteSpeed, 1);
 
         _nextIndex++;
     }
