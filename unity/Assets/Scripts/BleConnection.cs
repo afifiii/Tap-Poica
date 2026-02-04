@@ -130,12 +130,17 @@ public class BleConnection :MonoBehaviour
                 _devices[res.id]["name"] = res.name;
             if(res.isConnectableUpdated)
                 _devices[res.id]["isConnectable"] = res.isConnectable.ToString();
+            if (res.name != "") {
+                Debug.Log("Found name: " + res.name + " (" + res.isConnectable.ToString() + ")");
+            }
 
-            // Consider only devices which have the right name and which are connectable
-            if(_devices[res.id]["name"] != DeviceName || _devices[res.id]["isConnectable"] != "True") continue;
+            // Consider only devices which have the right name
+            // Sometimes the tinyscreen never adverts itself as connectable and this connects faster
+            // Even if it's not connectable, we can try to connect and it'll work anyway 💀
+            if (_devices[res.id]["name"] != DeviceName) continue;
             // This is our device
             StartStopDeviceScan();
-            // Debug.Log("Connecting to controller...");
+            Debug.Log("Connecting to controller...");
             _deviceId = res.id;
             StartServiceScan();
             return;
@@ -192,7 +197,7 @@ public class BleConnection :MonoBehaviour
             if(status == BleApi.ScanStatus.Finished)
             {
                 _isScanningCharacteristics = false;
-                // Debug.Log("Failed to find characteristic.");
+                Debug.LogError("Failed to find characteristic.");
                 _isScanningDevices = false;
                 StartStopDeviceScan();
             }
@@ -207,7 +212,7 @@ public class BleConnection :MonoBehaviour
             _isScanningCharacteristics = false;
             Subscribe();
             statusText.text = "Controller connected!";
-            // Debug.Log("Controller connected!");
+            Debug.Log("Controller connected!");
             break;
         }
     }
