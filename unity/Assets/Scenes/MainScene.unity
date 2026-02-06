@@ -2737,8 +2737,6 @@ MonoBehaviour:
   levelDropdown: {fileID: 1420343403}
   difficultyDropdown: {fileID: 1824737416}
   startButton: {fileID: 1409863803}
-  level: 0
-  difficulty: 0
   music: {fileID: 837088214}
 --- !u!4 &742418769
 Transform:
@@ -3214,7 +3212,7 @@ Transform:
   m_GameObject: {fileID: 837088213}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 3.5, z: -1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4849,11 +4847,9 @@ MonoBehaviour:
   offsetMs: 100
   noteStart: 9
   leadTimeMs: 1000
-  currentScore: 0
   scorePerNote: 100
   scorePerGoodNote: 125
   scorePerPerfectNote: 150
-  currentMultiplier: 1
   multiplierTracker: 0
   multiplierThresholds: 040000000800000010000000
   scoreTxt: {fileID: 1791990396}
