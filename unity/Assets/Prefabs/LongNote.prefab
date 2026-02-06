@@ -18,25 +18,21 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!224 &1052332114865475600
-RectTransform:
+--- !u!4 &1052332114865475600
+Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2588012161605038794}
+  serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.25, y: 20, z: 1}
+  m_LocalScale: {x: 0.25, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6224323543737354902}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
-  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!212 &1534073697878586917
 SpriteRenderer:
   serializedVersion: 2
@@ -319,7 +315,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   noteType: 1
   keyToPress: 32
-  line: {fileID: 0}
+  line: {fileID: 1534073697878586917}
   lineCollider: {fileID: 7176841057703718412}
   tailCollider: {fileID: 2683000825264742656}
   headCollider: {fileID: 2101932656532006088}
