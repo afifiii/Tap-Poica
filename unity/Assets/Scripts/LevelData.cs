@@ -9,26 +9,26 @@ public class LevelData :ScriptableObject
 
     public static readonly List<LevelMetadata> LevelRegistry = new()
     {
-        new LevelMetadata()
+        new LevelMetadata
         {
             displayName = "How You Like That",
             folderName = "howyoulikethat",
             artist = "BLACKPINK",
         },
-        new LevelMetadata()
+        new LevelMetadata
         {
             displayName = "DDU-DU DDU-DU",
             folderName = "ddududdudu",
             artist = "BLACKPINK",
             difficulties = 4
         },
-        new LevelMetadata()
+        new LevelMetadata
         {
             displayName = "APT.",
             folderName = "apt",
             artist = "ROSÉ",
         },
-        new LevelMetadata()
+        new LevelMetadata
         {
             displayName = "Kill This Love",
             folderName = "killthislove",
@@ -56,13 +56,21 @@ public class LevelData :ScriptableObject
             audioType = AudioType.OGGVORBIS,
             fileExtension = "ogg",
         },
-        new LevelMetadata()
+        new LevelMetadata
         {
             displayName = "Yuusha",
             folderName = "yuusha",
             artist = "YOASOBI",
             audioType = AudioType.OGGVORBIS,
             fileExtension = "ogg",
+        },
+        new LevelMetadata
+        {
+            displayName = "HITOMANIA",
+            folderName = "hitomania",
+            artist = "Sasuke Haraguchi",
+            difficulties = 2,
+            audioType = AudioType.OGGVORBIS,
         }
     };
 }
