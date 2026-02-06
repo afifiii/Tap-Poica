@@ -35,6 +35,7 @@ public class NoteSpawner : MonoBehaviour
     public void Initialize(OsuBeatmap osuBeatmap, AudioSource source)
     {
         // Debug.Log("Initializing NoteSpawner with beatmap data.");
+        _nextIndex = 0;
         _bpm = osuBeatmap.globalBpm;
         _audioSource = source;
         _notes = NoteConverter.Convert(osuBeatmap);
@@ -57,9 +58,7 @@ public class NoteSpawner : MonoBehaviour
         var musicTimeMs = _audioSource.time * 1000;
 
         while (_nextIndex < _notes.Count && leadTimeMs >= _notes[_nextIndex].timeMs - musicTimeMs + offsetMs)
-        {
             SpawnNote(_notes[_nextIndex]);
-        }
     }
 
     void SpawnNote(NoteData data)

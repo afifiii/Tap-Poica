@@ -2,7 +2,6 @@ using System;
 using System.Globalization;
 using OsuParser;
 using TMPro;
-using Unity.IntegerTime;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,13 +15,11 @@ public class GameManager :MonoBehaviour
     public float noteStart = 9f;
     public float leadTimeMs = 2000f; // how early to spawn before it reaches button
 
-    [Header("Score Settings")] public int currentScore;
-    public int scorePerNote = 100;
+    [Header("Score Settings")] public int scorePerNote = 100;
     public int scorePerGoodNote = 125;
     public int scorePerPerfectNote = 150;
 
-    [Header("Multiplier Settings")] public int currentMultiplier;
-    public int multiplierTracker;
+    [Header("Multiplier Settings")] public int multiplierTracker;
     public int[] multiplierThresholds;
 
     [Header("UI Elements")] public TextMeshProUGUI scoreTxt;
@@ -43,7 +40,8 @@ public class GameManager :MonoBehaviour
     public LevelManager levelManager;
     public AudioSource music;
 
-    // [Header("Stats Tracking")]
+    int _currentMultiplier;
+    int _currentScore;
     float _totalNotes;
     float _normalHits;
     float _goodHits;
@@ -78,7 +76,7 @@ public class GameManager :MonoBehaviour
         _lightstickInput.button = inputButton.GetComponent<ButtonController>();
 
         scoreTxt.text = "Score: 0";
-        currentMultiplier = 1;
+        _currentMultiplier = 1;
 
         _isHoldingNote = false;
         resultsScreen.SetActive(false);
@@ -98,7 +96,6 @@ public class GameManager :MonoBehaviour
             HoldEnd();
 
         if(resultsScreen.activeSelf || (music.isPlaying && music.time < music.clip.length)) return;
-        Debug.Log(music.time + " / " + music.clip.length);
         ShowResults();
     }
 
@@ -115,10 +112,10 @@ public class GameManager :MonoBehaviour
     void OnLevelReady(OsuBeatmap osuBeatmap)
     {
         _levelLoaded = true;
+        _totalNotes = osuBeatmap.notesCount;
         music.clip = osuBeatmap.audioClip;
         music.Play();
         music.loop = false;
-        menuScreen.SetActive(false);
         _noteSpawner.transform.position = Vector3.up * noteStart;
         _noteSpawner.longNotePrefab = longNotePrefab;
         _noteSpawner.shortNotePrefab = shortNotePrefab;
@@ -126,7 +123,7 @@ public class GameManager :MonoBehaviour
         _noteSpawner.noteStart = noteStart;
         _noteSpawner.leadTimeMs = leadTimeMs;
         _noteSpawner.Initialize(osuBeatmap, music);
-        _totalNotes = osuBeatmap.notesCount;
+        menuScreen.SetActive(false);
     }
 
     void ShowResults()
@@ -155,7 +152,7 @@ public class GameManager :MonoBehaviour
         };
         rankTxt.text = rankVal;
 
-        finalScoreText.text = currentScore.ToString();
+        finalScoreText.text = _currentScore.ToString();
         nextLevelButton.gameObject.SetActive(true);
     }
 
@@ -204,53 +201,60 @@ public class GameManager :MonoBehaviour
 
     void NoteHit()
     {
-        if(currentMultiplier - 1 < multiplierThresholds.Length)
+        if(_currentMultiplier - 1 < multiplierThresholds.Length)
         {
             multiplierTracker++;
 
-            if(multiplierThresholds[currentMultiplier - 1] <= multiplierTracker)
+            if(multiplierThresholds[_currentMultiplier - 1] <= multiplierTracker)
             {
                 multiplierTracker = 0;
-                currentMultiplier++;
+                _currentMultiplier++;
             }
         }
 
-        multiTxt.text = "Multiplier: x" + currentMultiplier;
-        scoreTxt.text = "Score: " + currentScore;
+        multiTxt.text = "Multiplier: x" + _currentMultiplier;
+        scoreTxt.text = "Score: " + _currentScore;
     }
 
     public void NormalHit()
     {
-        currentScore += scorePerNote * currentMultiplier;
+        _currentScore += scorePerNote * _currentMultiplier;
         NoteHit();
         _normalHits++;
     }
 
     public void GoodHit()
     {
-        currentScore += scorePerGoodNote * currentMultiplier;
+        _currentScore += scorePerGoodNote * _currentMultiplier;
         NoteHit();
         _goodHits++;
     }
 
     public void PerfectHit()
     {
-        currentScore += scorePerPerfectNote * currentMultiplier;
+        _currentScore += scorePerPerfectNote * _currentMultiplier;
         NoteHit();
         _perfectHits++;
     }
 
     public void NoteMissed()
     {
-        currentMultiplier = 1;
+        _currentMultiplier = 1;
         multiplierTracker = 0;
-        multiTxt.text = "Multiplier: x" + currentMultiplier;
+        multiTxt.text = "Multiplier: x" + _currentMultiplier;
         _missedHits++;
     }
 
     public void LoadLevel()
     {
         if(!BleConnection.Instance.controllerConnected || _levelLoaded) return;
+        _missedHits = _normalHits = _goodHits = _perfectHits = 0;
+        _currentScore = 0;
+        _currentMultiplier = 1;
+        multiplierTracker = 0;
+        scoreTxt.text = "Score: 0";
+        multiTxt.text = "Multiplier: x1";
+        nextLevelButton.gameObject.SetActive(false);
         music.Stop();
         _levelLoader.Load(levelManager.level, levelManager.difficulty, OnLevelReady);
     }

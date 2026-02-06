@@ -54,8 +54,13 @@ public class NoteObject :MonoBehaviour
         transform.Translate(_speed * Time.fixedDeltaTime * Vector3.down);
 
         if(!TooLate()) return;
-        GameManager.Instance.NoteMissed();
-        SpawnEffect(missEffect);
+
+        if(!_hasBeenJudged)
+        {
+            GameManager.Instance.NoteMissed();
+            SpawnEffect(missEffect);
+        }
+        
         Destroy(gameObject);
 
         // Should be called in GameManager instead
@@ -80,6 +85,7 @@ public class NoteObject :MonoBehaviour
     // Called when a single note is hit
     public void Pressed()
     {
+        if (noteType != NoteType.Short) return;
         Judge(LifetimeMs);
         Destroy(gameObject);
     }
@@ -97,18 +103,8 @@ public class NoteObject :MonoBehaviour
     {
         if(!isBeingHeld) return;
         isBeingHeld = false;
-
+        
         Judge(LifetimeMs + (float)_durationMs);
-
-        if(noteType == NoteType.Long && isBeingHeld)
-        {
-            Destroy(lineCollider.gameObject);
-            // Destroy(headCollider.gameObject);
-            Destroy(tailCollider.gameObject);
-        }
-        else
-            Destroy(gameObject);
-
     }
 
     void SpawnEffect(GameObject effectPrefab)
@@ -147,5 +143,7 @@ public class NoteObject :MonoBehaviour
                 SpawnEffect(perfectEffect);
                 break;
         }
+        
+        _hasBeenJudged = true;
     }
 }
