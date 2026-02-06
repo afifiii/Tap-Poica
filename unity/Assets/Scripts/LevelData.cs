@@ -4,8 +4,6 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "LevelData", menuName = "LevelData", order = 1)]
 public class LevelData :ScriptableObject
 {
-    public Level level;
-    public LevelDifficulty difficulty;
 
     public static readonly List<LevelMetadata> LevelRegistry = new()
     {
@@ -71,7 +69,54 @@ public class LevelData :ScriptableObject
             artist = "Sasuke Haraguchi",
             difficulties = 2,
             audioType = AudioType.OGGVORBIS,
-        }
+            fileExtension = "ogg",
+        },
+        new LevelMetadata
+        {
+            displayName = "MEGALOVANIA",
+            folderName = "megalovania",
+            artist = "Toby Fox",
+        },
+        new LevelMetadata
+        {
+            displayName = "Shinzou wo Sasageyo!",
+            folderName = "sasageyo",
+            artist = "Linked Horizon",
+        },
+        new LevelMetadata
+        {
+            displayName = "SPECIALZ",
+            folderName = "specialz",
+            artist = "King Gnu",
+            difficulties = 2,
+            audioType = AudioType.OGGVORBIS,
+            fileExtension = "ogg",
+        },
+        new LevelMetadata
+        {
+            displayName = "IDOL",
+            folderName = "idol",
+            artist = "YOASOBI",
+            difficulties = 2,
+            audioType = AudioType.OGGVORBIS,
+            fileExtension = "ogg",
+        },
+        new LevelMetadata
+        {
+            displayName = "il vento d'oro",
+            folderName = "goldenwind",
+            artist = "Yugo Kanno",
+            difficulties = 2,
+        },
+        new LevelMetadata
+        {
+            displayName = "Otonoke",
+            folderName = "otonoke",
+            artist = "Creepy Nuts",
+            difficulties = 4,
+            audioType = AudioType.OGGVORBIS,
+            fileExtension = "ogg",
+        },
     };
 }
 
@@ -84,7 +129,14 @@ public enum Level
     Fancy,
     IrisOut,
     JaneDoe,
-    Yuusha
+    Yuusha,
+    Hitomania,
+    Megalovania,
+    Sasageyo,
+    Specialz,
+    Idol,
+    GoldenWind,
+    Otonoke,
 }
 
 public enum LevelDifficulty
@@ -92,7 +144,8 @@ public enum LevelDifficulty
     Easy = 0,
     Medium,
     Hard,
-    Expert
+    Expert,
+    Insane,
 }
 
 public class LevelMetadata

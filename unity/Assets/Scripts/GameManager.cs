@@ -256,7 +256,7 @@ public class GameManager :MonoBehaviour
         multiTxt.text = "Multiplier: x1";
         nextLevelButton.gameObject.SetActive(false);
         music.Stop();
-        _levelLoader.Load(levelManager.level, levelManager.difficulty, OnLevelReady);
+        _levelLoader.Load(levelManager.Level, levelManager.Difficulty, OnLevelReady);
     }
 
     public void ExitToStart()

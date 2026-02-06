@@ -10,9 +10,10 @@ public class LevelManager :MonoBehaviour
     public TMP_Dropdown difficultyDropdown;
     public Button startButton;
 
-    public Level level;
-    public LevelDifficulty difficulty;
     public AudioSource music;
+    
+    public Level Level { get; private set; }
+    public LevelDifficulty Difficulty { get; private set; }
 
     void Start()
     {
@@ -22,23 +23,25 @@ public class LevelManager :MonoBehaviour
         levelDropdown.AddOptions(levelNames);
         levelDropdown.onValueChanged.AddListener(_ =>
         {
-            level = (Level)levelDropdown.value;
-            InitDifficultyOptions();
+            Level = (Level)levelDropdown.value;
             music.Stop();
+            
+            InitDifficultyOptions();
             StartMusic();
         });
-        level = (Level)levelDropdown.value;
+        Level = (Level)levelDropdown.value;
+        
+        InitDifficultyOptions();
         StartMusic();
 
-        InitDifficultyOptions();
-        difficultyDropdown.onValueChanged.AddListener(_ => difficulty = (LevelDifficulty)difficultyDropdown.value);
+        difficultyDropdown.onValueChanged.AddListener(_ => Difficulty = (LevelDifficulty)difficultyDropdown.value);
 
         startButton.interactable = BleConnection.Instance.controllerConnected;
     }
 
     void StartMusic()
     {
-        StartCoroutine(LevelLoader.LoadAudioClip(level, clip =>
+        StartCoroutine(LevelLoader.LoadAudioClip(Level, clip =>
         {
             music.clip = clip;
             music.loop = true;
@@ -50,9 +53,9 @@ public class LevelManager :MonoBehaviour
     {
         difficultyDropdown.ClearOptions();
         var difficultyNames = Enum.GetNames(typeof(LevelDifficulty))
-            .Take(LevelData.LevelRegistry[(int)level].difficulties).ToList();
+            .Take(LevelData.LevelRegistry[(int)Level].difficulties).ToList();
         difficultyDropdown.AddOptions(difficultyNames);
-        difficulty = (LevelDifficulty)difficultyDropdown.value;
+        Difficulty = (LevelDifficulty)difficultyDropdown.value;
     }
 
     void Update()
