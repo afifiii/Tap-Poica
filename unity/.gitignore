@@ -17,3 +17,5 @@ Temp/
 
 .utmp/
 *.user
+
+build
